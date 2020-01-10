@@ -4,7 +4,7 @@
 [![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://raw.githubusercontent.com/tideland/go-audit/master/LICENSE)
 [![GoDoc](https://godoc.org/tideland.dev/go/audit?status.svg)](https://godoc.org/tideland.dev/go/audit)
 [![Sourcegraph](https://sourcegraph.com/github.com/tideland/go-audit/-/badge.svg)](https://sourcegraph.com/github.com/tideland/go-audit?badge)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tideland/go-audit)](https://goreportcard.com/report/tideland.dev/go-audit)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tideland/go-audit)](https://goreportcard.com/report/tideland.dev/go/audit)
 
 ## Description
 
