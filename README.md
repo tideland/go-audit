@@ -2,8 +2,9 @@
 
 [![GitHub release](https://img.shields.io/github/release/tideland/go-audit.svg)](https://github.com/tideland/go-audit)
 [![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://raw.githubusercontent.com/tideland/go-audit/master/LICENSE)
-[![GoDoc](https://godoc.org/tideland.dev/go/audit?status.svg)](https://godoc.org/tideland.dev/go/audit)
-[![Sourcegraph](https://sourcegraph.com/github.com/tideland/go-audit/-/badge.svg)](https://sourcegraph.com/github.com/tideland/go-audit?badge)
+[![Go Module](https://img.shields.io/github/go-mod/go-version/tideland/go-audit)](https://github.com/tideland/go-audit/blob/master/go.mod)
+[![Workflow](https://img.shields.io/github/workflow/status/tideland/go-audit/build-on-push)](https://github.com/tideland/go-audit/actions/)
+[![GoDoc](https://godoc.org/tideland.dev/go/audit?status.svg)](https://pkg.go.dev/mod/tideland.dev/go/audit?tab=packages)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tideland/go-audit)](https://goreportcard.com/report/tideland.dev/go/audit)
 
 ## Description
