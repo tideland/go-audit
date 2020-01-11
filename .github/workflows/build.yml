@@ -1,8 +1,8 @@
-name: Build on Push
+name: build
 on: [push]
 jobs:
   build:
-    name: Build
+    name: Build on Push
     runs-on: ubuntu-18.04
     steps:
     - name: Set up Go 1.13
