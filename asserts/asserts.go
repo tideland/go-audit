@@ -144,10 +144,10 @@ func (a *Asserts) ErrorMatch(obtained error, regex string, msgs ...string) bool 
 	}
 	matches, err := a.IsMatching(obtained.Error(), regex)
 	if err != nil {
-		return a.failer.Fail(ErrorMatch, obtained, regex, "can't compile regex: "+err.Error())
+		return a.failer.Fail(ErrorMatch, obtained.Error(), regex, "can't compile regex: "+err.Error())
 	}
 	if !matches {
-		return a.failer.Fail(ErrorMatch, obtained, regex, msgs...)
+		return a.failer.Fail(ErrorMatch, obtained.Error(), regex, msgs...)
 	}
 	return true
 }

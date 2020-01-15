@@ -1,4 +1,4 @@
-// Tideland Go Libray - Audit - Asserts
+// Tideland Go Audit - Asserts
 //
 // Copyright (C) 2012-2020 Frank Mueller / Tideland / Oldenburg / Germany
 //
