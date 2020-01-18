@@ -81,17 +81,31 @@ func (a *Asserts) Logf(format string, args ...interface{}) {
 	a.failer.Logf(format, args...)
 }
 
+// OK is a convenient metatest depending in the obtained tyoe. In case
+// of a bool it has to be true, in case of an error or an ErrorProne
+// the error itself or the returned error have to be nil. If it's an
+// int it has to be 0 and a string has to be empty. Else it has to
+// be nil.
+func (a *Asserts) OK(obtained interface{}, msgs ...string) bool {
+	switch o := obtained.(type) {
+	case bool:
+		return a.True(o, msgs...)
+	case int:
+		return a.Equal(o, 0, msgs...)
+	case string:
+		return a.Equal(o, "", msgs...)
+	default:
+		err := ifaceToError(obtained)
+		return a.NoError(err, msgs...)
+	}
+}
+
 // True tests if obtained is true.
 func (a *Asserts) True(obtained bool, msgs ...string) bool {
 	if !a.tester.IsTrue(obtained) {
 		return a.failer.Fail(True, obtained, true, msgs...)
 	}
 	return true
-}
-
-// OK tests if obtained is true.
-func (a *Asserts) OK(obtained bool, msgs ...string) bool {
-	return a.True(obtained, msgs...)
 }
 
 // False tests if obtained is false.
@@ -134,33 +148,36 @@ func (a *Asserts) Different(obtained, expected interface{}, msgs ...string) bool
 	return true
 }
 
-// NoError tests if the obtained error is nil.
-func (a *Asserts) NoError(obtained error, msgs ...string) bool {
-	if !a.tester.IsNil(obtained) {
-		return a.failer.Fail(NoError, obtained, nil, msgs...)
+// NoError tests if the obtained error or ErrorProne.Err() is nil.
+func (a *Asserts) NoError(obtained interface{}, msgs ...string) bool {
+	err := ifaceToError(obtained)
+	if !a.tester.IsNil(err) {
+		return a.failer.Fail(NoError, err, nil, msgs...)
 	}
 	return true
 }
 
 // ErrorMatch tests if the obtained error as string matches a
 // regular expression.
-func (a *Asserts) ErrorMatch(obtained error, regex string, msgs ...string) bool {
+func (a *Asserts) ErrorMatch(obtained interface{}, regex string, msgs ...string) bool {
 	if obtained == nil {
 		return a.failer.Fail(ErrorMatch, nil, regex, "error is nil")
 	}
-	matches, err := a.tester.IsMatching(obtained.Error(), regex)
+	err := ifaceToError(obtained)
+	matches, err := a.tester.IsMatching(err.Error(), regex)
 	if err != nil {
-		return a.failer.Fail(ErrorMatch, obtained.Error(), regex, "can't compile regex: "+err.Error())
+		return a.failer.Fail(ErrorMatch, err, regex, "can't compile regex: "+err.Error())
 	}
 	if !matches {
-		return a.failer.Fail(ErrorMatch, obtained.Error(), regex, msgs...)
+		return a.failer.Fail(ErrorMatch, err, regex, msgs...)
 	}
 	return true
 }
 
 // ErrorContains tests if the obtained error contains a given string.
-func (a *Asserts) ErrorContains(obtained error, part string, msgs ...string) bool {
-	if !a.tester.IsSubstring(part, obtained.Error()) {
+func (a *Asserts) ErrorContains(obtained interface{}, part string, msgs ...string) bool {
+	err := ifaceToError(obtained)
+	if !a.tester.IsSubstring(part, err.Error()) {
 		return a.failer.Fail(ErrorContains, obtained, part, msgs...)
 	}
 	return true
@@ -466,7 +483,30 @@ type lowHigh struct {
 	high interface{}
 }
 
-// lenable is an interface for the Len() mehod.
+// errable describes a type able to return an error state
+// with the method Err().
+type errable interface {
+	Err() error
+}
+
+// ifaceToError converts an interface{} into an error.
+func ifaceToError(obtained interface{}) error {
+	err, ok := obtained.(error)
+	if ok {
+		return err
+	}
+	able, ok := obtained.(errable)
+	if ok {
+		if able == nil {
+			return nil
+		}
+		return able.Err()
+	}
+	return err
+}
+
+// lenable describes a type able to return its length
+// with the method Len().
 type lenable interface {
 	Len() int
 }

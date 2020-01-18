@@ -28,6 +28,38 @@ import (
 // TESTS
 //--------------------
 
+// withErr helps testing error returning types.
+type withErr struct {
+	err error
+}
+
+// Err implements the needed interface for returning errors.
+func (we withErr) Err() error {
+	return we.err
+}
+
+// TestAssertOK tests the OK() assertion.
+func TestAssertOK(t *testing.T) {
+	successfulAssert := successfulAsserts(t)
+	failingAssert := failingAsserts(t)
+
+	var errA error
+	var errB withErr = withErr{errA}
+	var errC = errors.New("ouch")
+	var errD withErr = withErr{errC}
+
+	successfulAssert.OK(true, "OK true should not fail")
+	successfulAssert.OK(errA, "OK nil error should not fail")
+	successfulAssert.OK(errB, "OK nil Err() should not fail")
+	successfulAssert.OK(0, "OK 0 should not fail")
+	successfulAssert.OK("", "OK '' should not fail")
+	failingAssert.OK(false, "OK false should fail and be logged")
+	failingAssert.OK(errC, "OK ouch error should fail and be logged")
+	failingAssert.OK(errD, "OK ouch Err() should fail and be logged")
+	failingAssert.OK(1, "OK 1 should fail and be logged")
+	failingAssert.OK("ouch", "OK 'ouch' should fail and be logged")
+}
+
 // TestAssertTrue tests the True() assertion.
 func TestAssertTrue(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
@@ -70,10 +102,14 @@ func TestAssertNoError(t *testing.T) {
 	failingAssert := failingAsserts(t)
 
 	var errA error
-	var errB = errors.New("ouch")
+	var errB withErr = withErr{errA}
+	var errC = errors.New("ouch")
+	var errD withErr = withErr{errC}
 
 	successfulAssert.NoError(errA, "should not fail")
-	failingAssert.NoError(errB, "should fail and be logged")
+	successfulAssert.NoError(errB, "should not fail")
+	failingAssert.NoError(errC, "should fail and be logged")
+	failingAssert.NoError(errD, "should fail and be logged")
 }
 
 // TestAssertEqual tests the Equal() assertion.
@@ -234,11 +270,13 @@ func TestAssertErrorMatch(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
 	failingAssert := failingAsserts(t)
 
-	err := errors.New("oops, an error")
+	errA := errors.New("oops, an error")
+	errB := withErr{errA}
 
-	successfulAssert.ErrorMatch(err, "oops, an error", "should not fail")
-	successfulAssert.ErrorMatch(err, "oops,.*", "should not fail")
-	failingAssert.ErrorMatch(err, "foo", "should fail and be logged")
+	successfulAssert.ErrorMatch(errA, "oops, an error", "should not fail")
+	successfulAssert.ErrorMatch(errA, "oops,.*", "should not fail")
+	successfulAssert.ErrorMatch(errB, "oops,.*", "should not fail")
+	failingAssert.ErrorMatch(errA, "foo", "should fail and be logged")
 }
 
 // TestAssertErrorContains tests the ErrorContains() assertion.
@@ -246,10 +284,12 @@ func TestAssertErrorContains(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
 	failingAssert := failingAsserts(t)
 
-	err := errors.New("oops, an error")
+	errA := errors.New("oops, an error")
+	errB := withErr{errA}
 
-	successfulAssert.ErrorContains(err, "an error", "should not fail")
-	failingAssert.ErrorContains(err, "foo", "should fail and be logged")
+	successfulAssert.ErrorContains(errA, "an error", "should not fail")
+	successfulAssert.ErrorContains(errB, "an error", "should not fail")
+	failingAssert.ErrorContains(errA, "foo", "should fail and be logged")
 }
 
 // TestAssertImplementor tests the Implementor() assertion.
@@ -519,7 +559,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:506:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:546:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -527,7 +567,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:507:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:547:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {

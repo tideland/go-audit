@@ -56,6 +56,7 @@ const (
 	WaitTested
 	Retry
 	Fail
+	OK
 )
 
 // testNames maps the tests to their descriptive names.
