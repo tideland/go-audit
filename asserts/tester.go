@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 //--------------------
@@ -221,11 +222,15 @@ func (t Tester) Len(obtained interface{}) (int, error) {
 	if l, ok := obtained.(lenable); ok {
 		return l.Len(), nil
 	}
+	// Check for sting due to UTF-8 rune handling.
+	if s, ok := obtained.(string); ok {
+		return utf8.RuneCountInString(s), nil
+	}
 	// Check the standard types.
 	obtainedValue := reflect.ValueOf(obtained)
 	obtainedKind := obtainedValue.Kind()
 	switch obtainedKind {
-	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice, reflect.String:
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
 		return obtainedValue.Len(), nil
 	default:
 		descr := ValueDescription(obtained)

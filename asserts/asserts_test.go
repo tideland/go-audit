@@ -353,6 +353,7 @@ func TestAssertLength(t *testing.T) {
 	failingAssert := failingAsserts(t)
 
 	successfulAssert.Length("", 0, "should not fail")
+	successfulAssert.Length("Hello, 世界", 9, "counts runes, should not fail")
 	successfulAssert.Length([]bool{true, false}, 2, "should also not fail")
 	failingAssert.Length("not empty", 0, "should fail and be logged")
 	failingAssert.Length([3]int{1, 2, 3}, 10, "should also fail and be logged")
@@ -559,7 +560,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:546:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:547:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -567,7 +568,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:547:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:548:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {
