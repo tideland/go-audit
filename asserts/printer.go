@@ -49,6 +49,8 @@ const (
 	NotEmpty
 	Length
 	Panics
+	NotPanics
+	PanicsWith
 	PathExists
 	Wait
 	WaitClosed
@@ -83,6 +85,8 @@ var testNames = []string{
 	NotEmpty:     "not empty",
 	Length:       "length",
 	Panics:       "panics",
+	NotPanics:    "not panics",
+	PanicsWith:   "panics with",
 	PathExists:   "path exists",
 	Wait:         "wait",
 	WaitClosed:   "wait closed",

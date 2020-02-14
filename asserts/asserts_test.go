@@ -360,13 +360,19 @@ func TestAssertLength(t *testing.T) {
 	failingAssert.Length(true, 1, "illegal type has to fail")
 }
 
-// TestAssertPanics tests the Panics() assertion.
+// TestAssertPanics tests the Panics(), NotPanics(), and PanicsWith() assertions.
 func TestAssertPanics(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
 	failingAssert := failingAsserts(t)
 
-	successfulAssert.Panics(func() { panic("ouch") }, "should panic")
-	failingAssert.Panics(func() { _ = 1 + 1 }, "should not panic")
+	successfulAssert.Panics(func() { panic("ouch") }, "panics: should panic")
+	failingAssert.Panics(func() { _ = 1 + 1 }, "panics: should not panic")
+
+	successfulAssert.NotPanics(func() { _ = 1 + 1 }, "not panics: should not panic")
+	failingAssert.NotPanics(func() { panic("ouch") }, "not panics: should panic")
+
+	successfulAssert.PanicsWith(func() { panic("ouch") }, "ouch", "panics with: should panic with ouch")
+	failingAssert.PanicsWith(func() { panic("bang") }, "boom", "panics with: should panic with boom")
 }
 
 // TestAssertWait tests the wait testing.
@@ -560,7 +566,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:547:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:553:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -568,7 +574,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:548:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:554:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {

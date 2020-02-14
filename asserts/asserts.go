@@ -339,8 +339,24 @@ func (a *Asserts) Length(obtained interface{}, expected int, msgs ...string) boo
 
 // Panics checks if the passed function panics.
 func (a *Asserts) Panics(pf func(), msgs ...string) bool {
-	if !a.tester.HasPanic(pf) {
+	if !a.tester.HasPanic(pf, nil) {
 		return a.failer.Fail(Panics, ValueDescription(pf), nil, msgs...)
+	}
+	return true
+}
+
+// NotPanics checks if the passed function does not panic.
+func (a *Asserts) NotPanics(pf func(), msgs ...string) bool {
+	if a.tester.HasPanic(pf, nil) {
+		return a.failer.Fail(NotPanics, ValueDescription(pf), nil, msgs...)
+	}
+	return true
+}
+
+// PanicsWith checks if the passed function panics with the passed reason.
+func (a *Asserts) PanicsWith(pf func(), reason interface{}, msgs ...string) bool {
+	if !a.tester.HasPanic(pf, reason) {
+		return a.failer.Fail(PanicsWith, ValueDescription(pf), reason, msgs...)
 	}
 	return true
 }

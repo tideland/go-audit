@@ -239,11 +239,19 @@ func (t Tester) Len(obtained interface{}) (int, error) {
 }
 
 // HasPanic checks if the passed function panics.
-func (t Tester) HasPanic(pf func()) (ok bool) {
+func (t Tester) HasPanic(pf func(), reason interface{}) (ok bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			// Panic, that's ok!
-			ok = true
+			// Panic, so far okay.
+			if reason == nil {
+				ok = true
+			} else {
+				if reflect.DeepEqual(r, reason) {
+					ok = true
+				} else {
+					ok = false
+				}
+			}
 		}
 	}()
 	pf()
