@@ -112,7 +112,7 @@ func (vs *Values) AssertKeyContainsValue(key, expected string, msgs ...string) {
 	defer restore()
 	kd, ok := vs.data[key]
 	vs.wa.assert.True(ok, msgs...)
-	vs.wa.assert.Contents(expected, kd, msgs...)
+	vs.wa.assert.Contains(expected, kd, msgs...)
 }
 
 // AssertKeyValueEquals tests if the first value for a key equals the expected value.
@@ -225,7 +225,7 @@ func (wresp *WebResponse) AssertBodyGrep(pattern string) []string {
 func (wresp *WebResponse) AssertBodyContains(expected string) {
 	restore := wresp.wa.assert.IncrCallstackOffset()
 	defer restore()
-	wresp.wa.assert.Contents(expected, wresp.body, "body doesn't contains expected")
+	wresp.wa.assert.Contains(expected, wresp.body, "body doesn't contains expected")
 }
 
 //--------------------

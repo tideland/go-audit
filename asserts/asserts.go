@@ -24,14 +24,12 @@ import (
 
 // Asserts provides a number of convenient test methods.
 type Asserts struct {
-	tester Tester
 	failer Failer
 }
 
 // New creates a new Asserts instance.
 func New(f Failer) *Asserts {
 	return &Asserts{
-		tester: Tester{},
 		failer: f,
 	}
 }
@@ -102,7 +100,7 @@ func (a *Asserts) OK(obtained interface{}, msgs ...string) bool {
 
 // True tests if obtained is true.
 func (a *Asserts) True(obtained bool, msgs ...string) bool {
-	if !a.tester.IsTrue(obtained) {
+	if !isTrue(obtained) {
 		return a.failer.Fail(True, obtained, true, msgs...)
 	}
 	return true
@@ -110,7 +108,7 @@ func (a *Asserts) True(obtained bool, msgs ...string) bool {
 
 // False tests if obtained is false.
 func (a *Asserts) False(obtained bool, msgs ...string) bool {
-	if a.tester.IsTrue(obtained) {
+	if isTrue(obtained) {
 		return a.failer.Fail(False, obtained, false, msgs...)
 	}
 	return true
@@ -118,7 +116,7 @@ func (a *Asserts) False(obtained bool, msgs ...string) bool {
 
 // Nil tests if obtained is nil.
 func (a *Asserts) Nil(obtained interface{}, msgs ...string) bool {
-	if !a.tester.IsNil(obtained) {
+	if !isNil(obtained) {
 		return a.failer.Fail(Nil, obtained, nil, msgs...)
 	}
 	return true
@@ -126,7 +124,7 @@ func (a *Asserts) Nil(obtained interface{}, msgs ...string) bool {
 
 // NotNil tests if obtained is not nil.
 func (a *Asserts) NotNil(obtained interface{}, msgs ...string) bool {
-	if a.tester.IsNil(obtained) {
+	if isNil(obtained) {
 		return a.failer.Fail(NotNil, obtained, nil, msgs...)
 	}
 	return true
@@ -134,7 +132,7 @@ func (a *Asserts) NotNil(obtained interface{}, msgs ...string) bool {
 
 // Equal tests if obtained and expected are equal.
 func (a *Asserts) Equal(obtained, expected interface{}, msgs ...string) bool {
-	if !a.tester.IsEqual(obtained, expected) {
+	if !isEqual(obtained, expected) {
 		return a.failer.Fail(Equal, obtained, expected, msgs...)
 	}
 	return true
@@ -142,7 +140,7 @@ func (a *Asserts) Equal(obtained, expected interface{}, msgs ...string) bool {
 
 // Different tests if obtained and expected are different.
 func (a *Asserts) Different(obtained, expected interface{}, msgs ...string) bool {
-	if a.tester.IsEqual(obtained, expected) {
+	if isEqual(obtained, expected) {
 		return a.failer.Fail(Different, obtained, expected, msgs...)
 	}
 	return true
@@ -151,7 +149,7 @@ func (a *Asserts) Different(obtained, expected interface{}, msgs ...string) bool
 // NoError tests if the obtained error or ErrorProne.Err() is nil.
 func (a *Asserts) NoError(obtained interface{}, msgs ...string) bool {
 	err := ifaceToError(obtained)
-	if !a.tester.IsNil(err) {
+	if !isNil(err) {
 		return a.failer.Fail(NoError, err, nil, msgs...)
 	}
 	return true
@@ -164,7 +162,7 @@ func (a *Asserts) ErrorMatch(obtained interface{}, regex string, msgs ...string)
 		return a.failer.Fail(ErrorMatch, nil, regex, "error is nil")
 	}
 	err := ifaceToError(obtained)
-	matches, err := a.tester.IsMatching(err.Error(), regex)
+	matches, err := isMatching(err.Error(), regex)
 	if err != nil {
 		return a.failer.Fail(ErrorMatch, err, regex, "can't compile regex: "+err.Error())
 	}
@@ -177,34 +175,34 @@ func (a *Asserts) ErrorMatch(obtained interface{}, regex string, msgs ...string)
 // ErrorContains tests if the obtained error contains a given string.
 func (a *Asserts) ErrorContains(obtained interface{}, part string, msgs ...string) bool {
 	err := ifaceToError(obtained)
-	if !a.tester.IsSubstring(part, err.Error()) {
+	if !isSubstring(part, err.Error()) {
 		return a.failer.Fail(ErrorContains, obtained, part, msgs...)
 	}
 	return true
 }
 
-// Contents tests if the obtained data is part of the expected
+// Contains tests if the obtained data is part of the expected
 // string, array, or slice.
-func (a *Asserts) Contents(part, full interface{}, msgs ...string) bool {
-	contains, err := a.tester.Contains(part, full)
+func (a *Asserts) Contains(part, full interface{}, msgs ...string) bool {
+	contains, err := contains(part, full)
 	if err != nil {
-		return a.failer.Fail(Contents, part, full, "type missmatch: "+err.Error())
+		return a.failer.Fail(Contains, part, full, "type missmatch: "+err.Error())
 	}
 	if !contains {
-		return a.failer.Fail(Contents, part, full, msgs...)
+		return a.failer.Fail(Contains, part, full, msgs...)
 	}
 	return true
 }
 
-// NotContents tests if the obtained data is not part of the expected
+// NotContains tests if the obtained data is not part of the expected
 // string, array, or slice.
-func (a *Asserts) NotContents(part, full interface{}, msgs ...string) bool {
-	contains, err := a.tester.Contains(part, full)
+func (a *Asserts) NotContains(part, full interface{}, msgs ...string) bool {
+	contains, err := contains(part, full)
 	if err != nil {
-		return a.failer.Fail(Contents, part, full, "type missmatch: "+err.Error())
+		return a.failer.Fail(NotContains, part, full, "type missmatch: "+err.Error())
 	}
 	if contains {
-		return a.failer.Fail(Contents, part, full, msgs...)
+		return a.failer.Fail(NotContains, part, full, msgs...)
 	}
 	return true
 }
@@ -212,7 +210,7 @@ func (a *Asserts) NotContents(part, full interface{}, msgs ...string) bool {
 // About tests if obtained and expected are near to each other
 // (within the given extent).
 func (a *Asserts) About(obtained, expected, extent float64, msgs ...string) bool {
-	if !a.tester.IsAbout(obtained, expected, extent) {
+	if !isAbout(obtained, expected, extent) {
 		return a.failer.Fail(About, obtained, expected, msgs...)
 	}
 	return true
@@ -225,7 +223,7 @@ func (a *Asserts) About(obtained, expected, extent float64, msgs ...string) bool
 // the length.
 func (a *Asserts) Range(obtained, low, high interface{}, msgs ...string) bool {
 	expected := &lowHigh{low, high}
-	inRange, err := a.tester.IsInRange(obtained, low, high)
+	inRange, err := isInRange(obtained, low, high)
 	if err != nil {
 		return a.failer.Fail(Range, obtained, expected, "type missmatch: "+err.Error())
 	}
@@ -237,7 +235,7 @@ func (a *Asserts) Range(obtained, low, high interface{}, msgs ...string) bool {
 
 // Substring tests if obtained is a substring of the full string.
 func (a *Asserts) Substring(obtained, full string, msgs ...string) bool {
-	if !a.tester.IsSubstring(obtained, full) {
+	if !isSubstring(obtained, full) {
 		return a.failer.Fail(Substring, obtained, full, msgs...)
 	}
 	return true
@@ -245,7 +243,7 @@ func (a *Asserts) Substring(obtained, full string, msgs ...string) bool {
 
 // Case tests if obtained string is uppercase or lowercase.
 func (a *Asserts) Case(obtained string, upperCase bool, msgs ...string) bool {
-	if !a.tester.IsCase(obtained, upperCase) {
+	if !isCase(obtained, upperCase) {
 		if upperCase {
 			return a.failer.Fail(Case, obtained, strings.ToUpper(obtained), msgs...)
 		}
@@ -256,7 +254,7 @@ func (a *Asserts) Case(obtained string, upperCase bool, msgs ...string) bool {
 
 // Match tests if the obtained string matches a regular expression.
 func (a *Asserts) Match(obtained, regex string, msgs ...string) bool {
-	matches, err := a.tester.IsMatching(obtained, regex)
+	matches, err := isMatching(obtained, regex)
 	if err != nil {
 		return a.failer.Fail(Match, obtained, regex, "can't compile regex: "+err.Error())
 	}
@@ -269,7 +267,7 @@ func (a *Asserts) Match(obtained, regex string, msgs ...string) bool {
 // Implementor tests if obtained implements the expected
 // interface variable pointer.
 func (a *Asserts) Implementor(obtained, expected interface{}, msgs ...string) bool {
-	implements, err := a.tester.IsImplementor(obtained, expected)
+	implements, err := isImplementor(obtained, expected)
 	if err != nil {
 		return a.failer.Fail(Implementor, obtained, expected, err.Error())
 	}
@@ -281,7 +279,7 @@ func (a *Asserts) Implementor(obtained, expected interface{}, msgs ...string) bo
 
 // Assignable tests if the types of expected and obtained are assignable.
 func (a *Asserts) Assignable(obtained, expected interface{}, msgs ...string) bool {
-	if !a.tester.IsAssignable(obtained, expected) {
+	if !isAssignable(obtained, expected) {
 		return a.failer.Fail(Assignable, obtained, expected, msgs...)
 	}
 	return true
@@ -290,7 +288,7 @@ func (a *Asserts) Assignable(obtained, expected interface{}, msgs ...string) boo
 // Unassignable tests if the types of expected and obtained are
 // not assignable.
 func (a *Asserts) Unassignable(obtained, expected interface{}, msgs ...string) bool {
-	if a.tester.IsAssignable(obtained, expected) {
+	if isAssignable(obtained, expected) {
 		return a.failer.Fail(Unassignable, obtained, expected, msgs...)
 	}
 	return true
@@ -299,12 +297,12 @@ func (a *Asserts) Unassignable(obtained, expected interface{}, msgs ...string) b
 // Empty tests if the len of the obtained string, array, slice
 // map, or channel is 0.
 func (a *Asserts) Empty(obtained interface{}, msgs ...string) bool {
-	length, err := a.tester.Len(obtained)
+	ok, l, err := hasLength(obtained, 0)
 	if err != nil {
 		return a.failer.Fail(Empty, ValueDescription(obtained), 0, err.Error())
 	}
-	if length > 0 {
-		return a.failer.Fail(Empty, length, 0, msgs...)
+	if !ok {
+		return a.failer.Fail(Empty, l, 0, msgs...)
 
 	}
 	return true
@@ -313,12 +311,12 @@ func (a *Asserts) Empty(obtained interface{}, msgs ...string) bool {
 // NotEmpty tests if the len of the obtained string, array, slice
 // map, or channel is greater than 0.
 func (a *Asserts) NotEmpty(obtained interface{}, msgs ...string) bool {
-	length, err := a.tester.Len(obtained)
+	ok, l, err := hasLength(obtained, 0)
 	if err != nil {
 		return a.failer.Fail(NotEmpty, ValueDescription(obtained), 0, err.Error())
 	}
-	if length == 0 {
-		return a.failer.Fail(NotEmpty, length, 0, msgs...)
+	if ok {
+		return a.failer.Fail(NotEmpty, l, 0, msgs...)
 
 	}
 	return true
@@ -327,19 +325,19 @@ func (a *Asserts) NotEmpty(obtained interface{}, msgs ...string) bool {
 // Length tests if the len of the obtained string, array, slice
 // map, or channel is equal to the expected one.
 func (a *Asserts) Length(obtained interface{}, expected int, msgs ...string) bool {
-	length, err := a.tester.Len(obtained)
+	ok, l, err := hasLength(obtained, expected)
 	if err != nil {
 		return a.failer.Fail(Length, ValueDescription(obtained), expected, err.Error())
 	}
-	if length != expected {
-		return a.failer.Fail(Length, length, expected, msgs...)
+	if !ok {
+		return a.failer.Fail(Length, l, expected, msgs...)
 	}
 	return true
 }
 
 // Panics checks if the passed function panics.
 func (a *Asserts) Panics(pf func(), msgs ...string) bool {
-	if !a.tester.HasPanic(pf, nil) {
+	if !hasPanic(pf, nil) {
 		return a.failer.Fail(Panics, ValueDescription(pf), nil, msgs...)
 	}
 	return true
@@ -347,7 +345,7 @@ func (a *Asserts) Panics(pf func(), msgs ...string) bool {
 
 // NotPanics checks if the passed function does not panic.
 func (a *Asserts) NotPanics(pf func(), msgs ...string) bool {
-	if a.tester.HasPanic(pf, nil) {
+	if hasPanic(pf, nil) {
 		return a.failer.Fail(NotPanics, ValueDescription(pf), nil, msgs...)
 	}
 	return true
@@ -355,7 +353,7 @@ func (a *Asserts) NotPanics(pf func(), msgs ...string) bool {
 
 // PanicsWith checks if the passed function panics with the passed reason.
 func (a *Asserts) PanicsWith(pf func(), reason interface{}, msgs ...string) bool {
-	if !a.tester.HasPanic(pf, reason) {
+	if !hasPanic(pf, reason) {
 		return a.failer.Fail(PanicsWith, ValueDescription(pf), reason, msgs...)
 	}
 	return true
@@ -363,7 +361,7 @@ func (a *Asserts) PanicsWith(pf func(), reason interface{}, msgs ...string) bool
 
 // PathExists checks if the passed path or file exists.
 func (a *Asserts) PathExists(obtained string, msgs ...string) bool {
-	valid, err := a.tester.IsValidPath(obtained)
+	valid, err := isValidPath(obtained)
 	if err != nil {
 		return a.failer.Fail(PathExists, obtained, true, err.Error())
 	}
@@ -383,7 +381,7 @@ func (a *Asserts) Wait(
 ) bool {
 	select {
 	case obtained := <-sigc:
-		if !a.tester.IsEqual(obtained, expected) {
+		if !isEqual(obtained, expected) {
 			return a.failer.Fail(Wait, obtained, expected, msgs...)
 		}
 		return true

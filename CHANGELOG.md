@@ -2,12 +2,14 @@
 
 ## v0.4.0
 
-* (C) Asserts.OK() now also handles func() error
 * (A) Asserts now contains NotPanics() and PanicsWith()
+* (C) Asserts.OK() now also handles func() error
+* (C) Migrate Tester into private helper functions
+* (D) Drop unused output in Asserts unit test
 
 ## v0.3.4
 
-* (F) Length tester now counts runes instead of bytes in case of strings
+* (C) Length tester now counts runes instead of bytes in case of strings
 
 ## v0.3.3
 

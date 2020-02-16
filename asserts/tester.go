@@ -27,16 +27,13 @@ import (
 // TESTER
 //--------------------
 
-// Tester is a helper which can be used in own Assertion implementations.
-type Tester struct{}
-
-// IsTrue checks if obtained is true.
-func (t Tester) IsTrue(obtained bool) bool {
+// isTrue checks if obtained is true.
+func isTrue(obtained bool) bool {
 	return obtained
 }
 
-// IsNil checks if obtained is nil in a safe way.
-func (t Tester) IsNil(obtained interface{}) bool {
+// isNil checks if obtained is nil in a safe way.
+func isNil(obtained interface{}) bool {
 	if obtained == nil {
 		// Standard test.
 		return true
@@ -51,13 +48,13 @@ func (t Tester) IsNil(obtained interface{}) bool {
 	return false
 }
 
-// IsEqual checks if obtained and expected are equal.
-func (t Tester) IsEqual(obtained, expected interface{}) bool {
+// isEqual checks if obtained and expected are equal.
+func isEqual(obtained, expected interface{}) bool {
 	return reflect.DeepEqual(obtained, expected)
 }
 
-// IsAbout checks if obtained and expected are to a given extent almost equal.
-func (t Tester) IsAbout(obtained, expected, extent float64) bool {
+// isAbout checks if obtained and expected are to a given extent almost equal.
+func isAbout(obtained, expected, extent float64) bool {
 	if extent < 0.0 {
 		extent = extent * (-1)
 	}
@@ -66,8 +63,8 @@ func (t Tester) IsAbout(obtained, expected, extent float64) bool {
 	return low <= obtained && obtained <= high
 }
 
-// IsInRange checks for range assertions
-func (t Tester) IsInRange(obtained, low, high interface{}) (bool, error) {
+// isInRange checks for range assertions
+func isInRange(obtained, low, high interface{}) (bool, error) {
 	// First standard types.
 	switch o := obtained.(type) {
 	case byte:
@@ -122,7 +119,7 @@ func (t Tester) IsInRange(obtained, low, high interface{}) (bool, error) {
 		return l <= o && o <= h, nil
 	}
 	// Now check the collection types.
-	ol, err := t.Len(obtained)
+	_, ol, err := hasLength(obtained, 0)
 	if err != nil {
 		return false, errors.New("no valid type with a length")
 	}
@@ -134,9 +131,9 @@ func (t Tester) IsInRange(obtained, low, high interface{}) (bool, error) {
 	return l <= ol && ol <= h, nil
 }
 
-// Contains checks if the part type is matching to the full type and
+// contains checks if the part type is matching to the full type and
 // if the full data contains the part data.
-func (t Tester) Contains(part, full interface{}) (bool, error) {
+func contains(part, full interface{}) (bool, error) {
 	switch fullValue := full.(type) {
 	case string:
 		// Content of a string.
@@ -178,26 +175,26 @@ func (t Tester) Contains(part, full interface{}) (bool, error) {
 	return false, errors.New("full value is no string, array, or slice")
 }
 
-// IsSubstring checks if obtained is a substring of the full string.
-func (t Tester) IsSubstring(obtained, full string) bool {
+// isSubstring checks if obtained is a substring of the full string.
+func isSubstring(obtained, full string) bool {
 	return strings.Contains(full, obtained)
 }
 
-// IsCase checks if the obtained string is uppercase or lowercase.
-func (t Tester) IsCase(obtained string, upperCase bool) bool {
+// isCase checks if the obtained string is uppercase or lowercase.
+func isCase(obtained string, upperCase bool) bool {
 	if upperCase {
 		return obtained == strings.ToUpper(obtained)
 	}
 	return obtained == strings.ToLower(obtained)
 }
 
-// IsMatching checks if the obtained string matches a regular expression.
-func (t Tester) IsMatching(obtained, regex string) (bool, error) {
+// isMatching checks if the obtained string matches a regular expression.
+func isMatching(obtained, regex string) (bool, error) {
 	return regexp.MatchString("^"+regex+"$", obtained)
 }
 
-// IsImplementor checks if obtained implements the expected interface variable pointer.
-func (t Tester) IsImplementor(obtained, expected interface{}) (bool, error) {
+// isImplementor checks if obtained implements the expected interface variable pointer.
+func isImplementor(obtained, expected interface{}) (bool, error) {
 	obtainedValue := reflect.ValueOf(obtained)
 	expectedValue := reflect.ValueOf(expected)
 	if !obtainedValue.IsValid() {
@@ -209,37 +206,40 @@ func (t Tester) IsImplementor(obtained, expected interface{}) (bool, error) {
 	return obtainedValue.Type().Implements(expectedValue.Elem().Type()), nil
 }
 
-// IsAssignable checks if the types of obtained and expected are assignable.
-func (t Tester) IsAssignable(obtained, expected interface{}) bool {
+// isAssignable checks if the types of obtained and expected are assignable.
+func isAssignable(obtained, expected interface{}) bool {
 	obtainedValue := reflect.ValueOf(obtained)
 	expectedValue := reflect.ValueOf(expected)
 	return obtainedValue.Type().AssignableTo(expectedValue.Type())
 }
 
-// Len checks the length of the obtained string, array, slice, map or channel.
-func (t Tester) Len(obtained interface{}) (int, error) {
+// hasLength checks the length of the obtained string, array, slice, map or channel.
+func hasLength(obtained interface{}, expected int) (bool, int, error) {
 	// Check using the lenable interface.
-	if l, ok := obtained.(lenable); ok {
-		return l.Len(), nil
+	if ol, ok := obtained.(lenable); ok {
+		l := ol.Len()
+		return l == expected, l, nil
 	}
 	// Check for sting due to UTF-8 rune handling.
 	if s, ok := obtained.(string); ok {
-		return utf8.RuneCountInString(s), nil
+		l := utf8.RuneCountInString(s)
+		return l == expected, l, nil
 	}
 	// Check the standard types.
-	obtainedValue := reflect.ValueOf(obtained)
-	obtainedKind := obtainedValue.Kind()
-	switch obtainedKind {
+	ov := reflect.ValueOf(obtained)
+	ok := ov.Kind()
+	switch ok {
 	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
-		return obtainedValue.Len(), nil
+		l := ov.Len()
+		return l == expected, l, nil
 	default:
 		descr := ValueDescription(obtained)
-		return 0, fmt.Errorf("obtained %s is no array, chan, map, slice, string or understands Len()", descr)
+		return false, 0, fmt.Errorf("obtained %s is no array, chan, map, slice, string and does not understand Len()", descr)
 	}
 }
 
-// HasPanic checks if the passed function panics.
-func (t Tester) HasPanic(pf func(), reason interface{}) (ok bool) {
+// hasPanic checks if the passed function panics.
+func hasPanic(pf func(), reason interface{}) (ok bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			// Panic, so far okay.
@@ -258,9 +258,8 @@ func (t Tester) HasPanic(pf func(), reason interface{}) (ok bool) {
 	return false
 }
 
-// IsValidPath checks if the given directory or
-// file path exists.
-func (t Tester) IsValidPath(path string) (bool, error) {
+// isValidPath checks if the given directory or file path exists.
+func isValidPath(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil

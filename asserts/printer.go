@@ -34,7 +34,8 @@ const (
 	NoError
 	Equal
 	Different
-	Contents
+	Contains
+	NotContains
 	About
 	Range
 	Substring
@@ -71,7 +72,8 @@ var testNames = []string{
 	NoError:      "no error",
 	Equal:        "equal",
 	Different:    "different",
-	Contents:     "contents",
+	Contains:     "contains",
+	NotContains:  "not contains",
 	About:        "about",
 	Range:        "range",
 	Substring:    "substring",
