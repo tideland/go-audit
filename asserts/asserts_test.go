@@ -53,11 +53,13 @@ func TestAssertOK(t *testing.T) {
 	successfulAssert.OK(errB, "OK nil Err() should not fail")
 	successfulAssert.OK(0, "OK 0 should not fail")
 	successfulAssert.OK("", "OK '' should not fail")
+	successfulAssert.OK(func() error { return nil }, "OK nil func should not fail")
 	failingAssert.OK(false, "OK false should fail and be logged")
 	failingAssert.OK(errC, "OK ouch error should fail and be logged")
 	failingAssert.OK(errD, "OK ouch Err() should fail and be logged")
 	failingAssert.OK(1, "OK 1 should fail and be logged")
 	failingAssert.OK("ouch", "OK 'ouch' should fail and be logged")
+	failingAssert.OK(func() error { return errC }, "OK error func should fail and be logged")
 }
 
 // TestAssertTrue tests the True() assertion.

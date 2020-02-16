@@ -82,10 +82,9 @@ func (a *Asserts) Logf(format string, args ...interface{}) {
 }
 
 // OK is a convenient metatest depending in the obtained tyoe. In case
-// of a bool it has to be true, in case of an error or an ErrorProne
-// the error itself or the returned error have to be nil. If it's an
-// int it has to be 0 and a string has to be empty. Else it has to
-// be nil.
+// of a bool it has to be true, an int has to be 0, a string has to
+// be empty, and a func() error has to return no error. Any else value
+// has to be nil or in case of an ErrorProne its Err() has to return nil.
 func (a *Asserts) OK(obtained interface{}, msgs ...string) bool {
 	switch o := obtained.(type) {
 	case bool:
@@ -94,9 +93,10 @@ func (a *Asserts) OK(obtained interface{}, msgs ...string) bool {
 		return a.Equal(o, 0, msgs...)
 	case string:
 		return a.Equal(o, "", msgs...)
+	case func() error:
+		return a.NoError(o(), msgs...)
 	default:
-		err := ifaceToError(obtained)
-		return a.NoError(err, msgs...)
+		return a.NoError(obtained, msgs...)
 	}
 }
 
