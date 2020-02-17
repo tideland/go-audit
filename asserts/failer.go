@@ -345,7 +345,7 @@ func (f *testingFailer) Fail(test Test, obtained, expected interface{}, msgs ...
 		fmt.Fprintf(buffer, "got: %v", obtained)
 	case Implementor, Assignable, Unassignable:
 		fmt.Fprintf(buffer, "got: %v, want: %v", ValueDescription(obtained), ValueDescription(expected))
-	case Contents:
+	case Contains, NotContains:
 		switch typedObtained := obtained.(type) {
 		case string:
 			fmt.Fprintf(buffer, "part: %s, full: %s", typedObtained, expected)

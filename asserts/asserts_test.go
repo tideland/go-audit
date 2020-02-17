@@ -16,7 +16,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -49,15 +48,19 @@ func TestAssertOK(t *testing.T) {
 	var errD withErr = withErr{errC}
 
 	successfulAssert.OK(true, "OK true should not fail")
+	successfulAssert.OK(func() bool { return true }, "OK true func should not fail")
 	successfulAssert.OK(errA, "OK nil error should not fail")
 	successfulAssert.OK(errB, "OK nil Err() should not fail")
 	successfulAssert.OK(0, "OK 0 should not fail")
 	successfulAssert.OK("", "OK '' should not fail")
+	successfulAssert.OK(func() error { return nil }, "OK nil func should not fail")
 	failingAssert.OK(false, "OK false should fail and be logged")
+	failingAssert.OK(func() bool { return false }, "OK false func should fail and be logged")
 	failingAssert.OK(errC, "OK ouch error should fail and be logged")
 	failingAssert.OK(errD, "OK ouch Err() should fail and be logged")
 	failingAssert.OK(1, "OK 1 should fail and be logged")
 	failingAssert.OK("ouch", "OK 'ouch' should fail and be logged")
+	failingAssert.OK(func() error { return errC }, "OK error func should fail and be logged")
 }
 
 // TestAssertTrue tests the True() assertion.
@@ -192,35 +195,35 @@ func TestAssertRange(t *testing.T) {
 	failingAssert.Range(map[int]int{3: 1, 2: 2, 1: 3}, 5, 10, "map length out of range")
 }
 
-// TestAssertContents tests the Contents() assertion.
-func TestAssertContents(t *testing.T) {
+// TestAssertContains tests the Contains() and NotContains() assertion.
+func TestAssertContains(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
 	failingAssert := failingAsserts(t)
 
-	successfulAssert.Contents("bar", "foobarbaz")
-	successfulAssert.Contents(4711, []int{1, 2, 3, 4711, 5, 6, 7, 8, 9})
-	failingAssert.Contents(4711, "12345-4711-67890")
-	failingAssert.Contents(4711, "foo")
-	failingAssert.Contents(4711, []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
-	successfulAssert.Contents("4711", []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
-	failingAssert.Contents("foobar", []byte("the quick brown fox jumps over the lazy dog"))
+	successfulAssert.Contains("bar", "foobarbaz")
+	successfulAssert.Contains(4711, []int{1, 2, 3, 4711, 5, 6, 7, 8, 9})
+	failingAssert.Contains(4711, "12345-4711-67890")
+	failingAssert.Contains(4711, "foo")
+	failingAssert.Contains(4711, []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	successfulAssert.Contains("4711", []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	failingAssert.Contains("foobar", []byte("the quick brown fox jumps over the lazy dog"))
 
-	successfulAssert.NotContents("yadda", "foobarbaz")
-	successfulAssert.NotContents(123, []int{1, 2, 3, 4711, 5, 6, 7, 8, 9})
-	failingAssert.NotContents("4711", "12345-4711-67890")
-	failingAssert.NotContents("oba", "foobar")
-	failingAssert.NotContents("4711", []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
-	successfulAssert.NotContents(4711, []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
-	failingAssert.NotContents("fox", []byte("the quick brown fox jumps over the lazy dog"))
+	successfulAssert.NotContains("yadda", "foobarbaz")
+	successfulAssert.NotContains(123, []int{1, 2, 3, 4711, 5, 6, 7, 8, 9})
+	failingAssert.NotContains("4711", "12345-4711-67890")
+	failingAssert.NotContains("oba", "foobar")
+	failingAssert.NotContains("4711", []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	successfulAssert.NotContains(4711, []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	failingAssert.NotContains("fox", []byte("the quick brown fox jumps over the lazy dog"))
 }
 
-// TestAssertContentsPrint test the visualization of failing content tests.
-func TestAssertContentsPrint(t *testing.T) {
+// TestAssertContainsPrint test the visualization of failing content tests.
+func TestAssertContainsPrint(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.NoFailing)
 
 	assert.Logf("printing of failing content tests")
-	assert.Contents("foobar", []byte("the quick brown fox jumps over the lazy dog"), "test fails but passes, just visualization")
-	assert.Contents([]byte("foobar"), []byte("the quick brown ..."), "test fails but passes, just visualization")
+	assert.Contains("foobar", []byte("the quick brown fox jumps over the lazy dog"), "test fails but passes, just visualization")
+	assert.Contains([]byte("foobar"), []byte("the quick brown ..."), "test fails but passes, just visualization")
 }
 
 // TestOffsetPrint test the correct visualization when printing
@@ -360,13 +363,19 @@ func TestAssertLength(t *testing.T) {
 	failingAssert.Length(true, 1, "illegal type has to fail")
 }
 
-// TestAssertPanics tests the Panics() assertion.
+// TestAssertPanics tests the Panics(), NotPanics(), and PanicsWith() assertions.
 func TestAssertPanics(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
 	failingAssert := failingAsserts(t)
 
-	successfulAssert.Panics(func() { panic("ouch") }, "should panic")
-	failingAssert.Panics(func() { _ = 1 + 1 }, "should not panic")
+	successfulAssert.Panics(func() { panic("ouch") }, "panics: should panic")
+	failingAssert.Panics(func() { _ = 1 + 1 }, "panics: should not panic")
+
+	successfulAssert.NotPanics(func() { _ = 1 + 1 }, "not panics: should not panic")
+	failingAssert.NotPanics(func() { panic("ouch") }, "not panics: should panic")
+
+	successfulAssert.PanicsWith(func() { panic("ouch") }, "ouch", "panics with: should panic with ouch")
+	failingAssert.PanicsWith(func() { panic("bang") }, "boom", "panics with: should panic with boom")
 }
 
 // TestAssertWait tests the wait testing.
@@ -560,7 +569,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:547:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:556:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -568,7 +577,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:548:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:557:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {
@@ -610,9 +619,9 @@ func TestSetPrinter(t *testing.T) {
 
 	b := bp.Flush()
 	assert.Length(b, 3)
-	assert.Contents(b[0], "first")
-	assert.Contents(b[1], "second")
-	assert.Contents(b[2], "third")
+	assert.Contains(b[0], "first")
+	assert.Contains(b[1], "second")
+	assert.Contains(b[2], "third")
 	b = bp.Flush()
 	assert.Length(b, 0)
 }
@@ -639,14 +648,6 @@ func (f *metaFailer) Logf(format string, args ...interface{}) {
 }
 
 func (f *metaFailer) Fail(test asserts.Test, obtained, expected interface{}, msgs ...string) bool {
-	msg := strings.Join(msgs, " ")
-	if msg != "" {
-		msg = " [" + msg + "]"
-	}
-	format := "testing assert %q failed: '%v' (%v) <> '%v' (%v)" + msg
-	obtainedVD := asserts.ValueDescription(obtained)
-	expectedVD := asserts.ValueDescription(expected)
-	f.Logf(format, test, obtained, obtainedVD, expected, expectedVD)
 	if f.fail {
 		f.t.FailNow()
 	}

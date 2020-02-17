@@ -34,7 +34,8 @@ const (
 	NoError
 	Equal
 	Different
-	Contents
+	Contains
+	NotContains
 	About
 	Range
 	Substring
@@ -49,6 +50,8 @@ const (
 	NotEmpty
 	Length
 	Panics
+	NotPanics
+	PanicsWith
 	PathExists
 	Wait
 	WaitClosed
@@ -69,7 +72,8 @@ var testNames = []string{
 	NoError:      "no error",
 	Equal:        "equal",
 	Different:    "different",
-	Contents:     "contents",
+	Contains:     "contains",
+	NotContains:  "not contains",
 	About:        "about",
 	Range:        "range",
 	Substring:    "substring",
@@ -83,6 +87,8 @@ var testNames = []string{
 	NotEmpty:     "not empty",
 	Length:       "length",
 	Panics:       "panics",
+	NotPanics:    "not panics",
+	PanicsWith:   "panics with",
 	PathExists:   "path exists",
 	Wait:         "wait",
 	WaitClosed:   "wait closed",
