@@ -48,12 +48,14 @@ func TestAssertOK(t *testing.T) {
 	var errD withErr = withErr{errC}
 
 	successfulAssert.OK(true, "OK true should not fail")
+	successfulAssert.OK(func() bool { return true }, "OK true func should not fail")
 	successfulAssert.OK(errA, "OK nil error should not fail")
 	successfulAssert.OK(errB, "OK nil Err() should not fail")
 	successfulAssert.OK(0, "OK 0 should not fail")
 	successfulAssert.OK("", "OK '' should not fail")
 	successfulAssert.OK(func() error { return nil }, "OK nil func should not fail")
 	failingAssert.OK(false, "OK false should fail and be logged")
+	failingAssert.OK(func() bool { return false }, "OK false func should fail and be logged")
 	failingAssert.OK(errC, "OK ouch error should fail and be logged")
 	failingAssert.OK(errD, "OK ouch Err() should fail and be logged")
 	failingAssert.OK(1, "OK 1 should fail and be logged")
@@ -567,7 +569,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:554:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:556:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -575,7 +577,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:555:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:557:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {
