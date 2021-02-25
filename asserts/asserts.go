@@ -539,6 +539,9 @@ type errable interface {
 
 // ifaceToError converts an interface{} into an error.
 func ifaceToError(obtained interface{}) error {
+	if obtained == nil {
+		return nil
+	}
 	err, ok := obtained.(error)
 	if ok {
 		return err
@@ -550,7 +553,8 @@ func ifaceToError(obtained interface{}) error {
 		}
 		return able.Err()
 	}
-	return err
+	// No error and not errable, so return panic.
+	panic("invalid type for error assertion")
 }
 
 // lenable describes a type able to return its length
