@@ -1,6 +1,6 @@
 // Tideland Go Audit - Asserts
 //
-// Copyright (C) 2012-2020 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2021 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -101,6 +101,28 @@ func (a *Asserts) OK(obtained interface{}, msgs ...string) bool {
 	}
 }
 
+// NotOK is a convenient metatest depending in the obtained tyoe. In case
+// of a bool it has to be false, a func() bool has to return false, an int
+// has to be not 0, a string has to be not empty, and a func() error has to
+// return an error. Any else value has to be not nil or in case of an ErrorProne
+// its Err() has not to return nil.
+func (a *Asserts) NotOK(obtained interface{}, msgs ...string) bool {
+	switch o := obtained.(type) {
+	case bool:
+		return a.False(o, msgs...)
+	case func() bool:
+		return a.False(o(), msgs...)
+	case int:
+		return a.Different(o, 0, msgs...)
+	case string:
+		return a.Different(o, "", msgs...)
+	case func() error:
+		return a.AnyError(o(), msgs...)
+	default:
+		return a.AnyError(obtained, msgs...)
+	}
+}
+
 // True tests if obtained is true.
 func (a *Asserts) True(obtained bool, msgs ...string) bool {
 	if !isTrue(obtained) {
@@ -154,6 +176,15 @@ func (a *Asserts) NoError(obtained interface{}, msgs ...string) bool {
 	err := ifaceToError(obtained)
 	if !isNil(err) {
 		return a.failer.Fail(NoError, err, nil, msgs...)
+	}
+	return true
+}
+
+// AnyError tests if the obtained error or ErrorProne.Err() is not nil.
+func (a *Asserts) AnyError(obtained interface{}, msgs ...string) bool {
+	err := ifaceToError(obtained)
+	if isNil(err) {
+		return a.failer.Fail(AnyError, err, nil, msgs...)
 	}
 	return true
 }
