@@ -1,6 +1,6 @@
 // Tideland Go Audit - Asserts
 //
-// Copyright (C) 2012-2020 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2021 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -32,6 +32,7 @@ const (
 	Nil
 	NotNil
 	NoError
+	AnyError
 	Equal
 	Different
 	Contains
@@ -60,6 +61,7 @@ const (
 	Retry
 	Fail
 	OK
+	NotOK
 )
 
 // testNames maps the tests to their descriptive names.
@@ -70,6 +72,7 @@ var testNames = []string{
 	Nil:          "nil",
 	NotNil:       "not nil",
 	NoError:      "no error",
+	AnyError:     "any error",
 	Equal:        "equal",
 	Different:    "different",
 	Contains:     "contains",

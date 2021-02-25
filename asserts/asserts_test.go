@@ -1,6 +1,6 @@
 // Tideland Go Audit - Asserts - Unit Tests
 //
-// Copyright (C) 2012-2020 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2021 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -63,6 +63,32 @@ func TestAssertOK(t *testing.T) {
 	failingAssert.OK(func() error { return errC }, "OK error func should fail and be logged")
 }
 
+// TestAssertNotOK tests the NotOK() assertion.
+func TestAssertNotOK(t *testing.T) {
+	successfulAssert := successfulAsserts(t)
+	failingAssert := failingAsserts(t)
+
+	var errA error
+	var errB withErr = withErr{errA}
+	var errC = errors.New("ouch")
+	var errD withErr = withErr{errC}
+
+	successfulAssert.NotOK(false, "NotOK false should not fail")
+	successfulAssert.NotOK(func() bool { return false }, "NotOK false func should not fail")
+	successfulAssert.NotOK(errC, "NotOK error should not fail")
+	successfulAssert.NotOK(errD, "NotOK nil Err() should not fail")
+	successfulAssert.NotOK(-1, "NotOK -1 should not fail")
+	successfulAssert.NotOK("ouch", "NotOK 'ouch' should not fail")
+	successfulAssert.NotOK(func() error { return errC }, "NotOK error func should not fail")
+	failingAssert.NotOK(true, "NotOK true should fail and be logged")
+	failingAssert.NotOK(func() bool { return true }, "NotOK true func should fail and be logged")
+	failingAssert.NotOK(errA, "NotOK nil error should fail and be logged")
+	failingAssert.NotOK(errB, "NotOK nil Err() should fail and be logged")
+	failingAssert.NotOK(0, "NotOK -1 should fail and be logged")
+	failingAssert.NotOK("", "NotOK '' should fail and be logged")
+	failingAssert.NotOK(func() error { return errA }, "NotOK nil error func should fail and be logged")
+}
+
 // TestAssertTrue tests the True() assertion.
 func TestAssertTrue(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
@@ -113,6 +139,22 @@ func TestAssertNoError(t *testing.T) {
 	successfulAssert.NoError(errB, "should not fail")
 	failingAssert.NoError(errC, "should fail and be logged")
 	failingAssert.NoError(errD, "should fail and be logged")
+}
+
+// TestAssertAnyError tests the AnyError() assertion.
+func TestAssertAnyError(t *testing.T) {
+	successfulAssert := successfulAsserts(t)
+	failingAssert := failingAsserts(t)
+
+	var errA error
+	var errB withErr = withErr{errA}
+	var errC = errors.New("ouch")
+	var errD withErr = withErr{errC}
+
+	successfulAssert.AnyError(errC, "should not fail")
+	successfulAssert.AnyError(errD, "should not fail")
+	failingAssert.AnyError(errA, "should fail and be logged")
+	failingAssert.AnyError(errB, "should fail and be logged")
 }
 
 // TestAssertEqual tests the Equal() assertion.
@@ -569,7 +611,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:556:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:598:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -577,7 +619,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:557:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:599:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {
