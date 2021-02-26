@@ -1,6 +1,6 @@
 // Tideland Go Audit - Generators
 //
-// Copyright (C) 2013-2020 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2013-2021 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -198,6 +198,15 @@ func (g *Generator) FlipCoin(percent int) bool {
 		percent = 0
 	}
 	return g.Percent() >= percent
+}
+
+// OneOf returns one of the passed empty interfaces (aka values).
+func (g *Generator) OneOf(values ...interface{}) interface{} {
+	if len(values) == 0 {
+		return 0
+	}
+	i := g.Int(0, len(values)-1)
+	return values[i]
 }
 
 // OneByteOf returns one of the passed bytes.

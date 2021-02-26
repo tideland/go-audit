@@ -1,6 +1,6 @@
 // Tideland Go Audit - Generators - Unit Tests
 //
-// Copyright (C) 2013-2020 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2013-2021 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the New BSD license.
@@ -141,8 +141,12 @@ func TestInts(t *testing.T) {
 func TestOneOf(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 	gen := generators.New(generators.FixedRand())
+	stuff := []interface{}{1, true, "three", 47.11, []byte{'A', 'B', 'C'}}
 
 	for i := 0; i < 10000; i++ {
+		m := gen.OneOf(stuff...)
+		assert.Contains(m, stuff)
+
 		b := gen.OneByteOf(1, 2, 3, 4, 5)
 		assert.True(b >= 1 && b <= 5)
 
