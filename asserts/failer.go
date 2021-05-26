@@ -381,8 +381,12 @@ func (f *testingFailer) Fail(test Test, obtained, expected interface{}, msgs ...
 // package. The *testing.T has to be passed as failable, the argument.
 // shallFail controls if a failing assertion also lets fail the Go test.
 func NewTesting(f Failable, mode FailMode) *Asserts {
+	p, ok := f.(Printer)
+	if !ok {
+		p = NewStandardPrinter()
+	}
 	return New(&testingFailer{
-		printer:  NewStandardPrinter(),
+		printer:  p,
 		failable: f,
 		offset:   4,
 		mode:     mode,
