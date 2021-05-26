@@ -382,9 +382,7 @@ func (f *testingFailer) Fail(test Test, obtained, expected interface{}, msgs ...
 // shallFail controls if a failing assertion also lets fail the Go test.
 func NewTesting(f Failable, mode FailMode) *Asserts {
 	p, ok := f.(Printer)
-	if ok {
-		p = NewWrappedPrinter(p)
-	} else {
+	if !ok {
 		p = NewStandardPrinter()
 	}
 	return New(&testingFailer{
