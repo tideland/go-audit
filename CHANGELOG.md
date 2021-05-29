@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.0
+
+* (A) Asserts now contains NotOK() and AnyError()
+* (C) Asserts created with NewTesting() now uses the Failable as Printer if
+      it implements the according interface
+* (A) Generator now contains OneOf()
+
 ## v0.4.0
 
 * (A) Asserts now contains NotPanics() and PanicsWith()
