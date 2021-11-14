@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.2
+
+* (C) Optimize output of last change
+
+## v0.5.1
+
+* (C) Fix output in case of failing web body assertions
+
 ## v0.5.0
 
 * (A) Asserts now contains NotOK() and AnyError()

@@ -210,7 +210,7 @@ func (wresp *WebResponse) AssertBodyMatches(pattern string) {
 	body := string(wresp.body)
 	ok, err := regexp.MatchString(pattern, body)
 	wresp.wa.assert.Nil(err, "illegal content match pattern")
-	wresp.wa.assert.True(ok, "body doesn't match pattern", body)
+	wresp.wa.assert.True(ok, "body doesn't match pattern", "["+body+"]")
 }
 
 // AssertBodyGrep greps content out of the body.
