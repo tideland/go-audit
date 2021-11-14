@@ -207,9 +207,10 @@ func (wresp *WebResponse) AssertUnmarshalledBody(data interface{}) {
 func (wresp *WebResponse) AssertBodyMatches(pattern string) {
 	restore := wresp.wa.assert.IncrCallstackOffset()
 	defer restore()
-	ok, err := regexp.MatchString(pattern, string(wresp.body))
+	body := string(wresp.body)
+	ok, err := regexp.MatchString(pattern, body)
 	wresp.wa.assert.Nil(err, "illegal content match pattern")
-	wresp.wa.assert.True(ok, "body doesn't match pattern")
+	wresp.wa.assert.True(ok, "body doesn't match pattern", body)
 }
 
 // AssertBodyGrep greps content out of the body.
