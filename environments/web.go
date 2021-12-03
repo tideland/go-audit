@@ -272,6 +272,12 @@ func (wreq *WebRequest) SetAccept(contentType string) {
 	wreq.Header().Set(HeaderAccept, contentType)
 }
 
+// Write implements the io.Writer interface.
+func (wreq *WebRequest) Write(body []byte) (int, error) {
+	wreq.body = append(wreq.body, body...)
+	return len(wreq.body), nil
+}
+
 // Upload sets the request as a file upload request.
 func (wreq *WebRequest) Upload(fieldname, filename, data string) {
 	wreq.fieldname = fieldname
