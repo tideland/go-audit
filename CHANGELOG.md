@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.0
+
+* (A) New web package for handler tests
+
 ## v0.5.2
 
 * (C) Optimize output of last change

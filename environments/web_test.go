@@ -130,10 +130,10 @@ func MakeHelloWorldHandler(assert *asserts.Asserts, who string) http.HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
 		reply := "Hello, " + who + "!"
 		w.Header().Add(environments.HeaderContentType, environments.ContentTypePlain)
+		w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte(reply)); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -146,12 +146,12 @@ func MakeHeaderCookiesHandler(assert *asserts.Asserts) http.HandlerFunc {
 			Name:  "Cookie-Out",
 			Value: cookieOut,
 		})
+		w.WriteHeader(http.StatusOK)
 		w.Header().Set(environments.HeaderContentType, environments.ContentTypePlain)
 		w.Header().Set("Header-Out", headerOut)
 		if _, err := w.Write([]byte("Done!")); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
