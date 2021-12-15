@@ -12,56 +12,77 @@ package web // import "tideland.dev/go/audit/web"
 //--------------------
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
 //--------------------
-// RESPONSE
+// RESPONSE WRITER
 //--------------------
 
-// Response contains the response of the simulated HTTP request.
-type Response struct {
-	header     http.Header
-	statusCode int
-	body       []byte
+// ResponseWriter contains the response of the simulated HTTP request.
+type ResponseWriter struct {
+	buffer *bytes.Buffer
+	resp   *http.Response
 }
 
-// newResponse creates a new initialized response.
-func newResponse() *Response {
-	return &Response{
-		header:     make(http.Header),
-		statusCode: http.StatusOK,
+// newResponseWriter creates a new initialized response writer.
+func newResponseWriter() *ResponseWriter {
+	w := &ResponseWriter{
+		buffer: bytes.NewBuffer(nil),
+		resp: &http.Response{
+			Status:        "200 OK",
+			StatusCode:    http.StatusOK,
+			Proto:         "HTTP/1.0",
+			ProtoMajor:    1,
+			ProtoMinor:    0,
+			Header:        make(http.Header),
+			ContentLength: -1,
+		},
 	}
+	w.resp.Body = ioutil.NopCloser(w.buffer)
+	return w
 }
 
 // Header returns the header values of the response.
-func (r *Response) Header() http.Header {
-	return r.header
+func (w *ResponseWriter) Header() http.Header {
+	return w.resp.Header
 }
 
 // WriteHeader writes the status code of the response.
-func (r *Response) WriteHeader(statusCode int) {
-	if len(r.body) == 0 {
-		r.statusCode = statusCode
+func (w *ResponseWriter) WriteHeader(statusCode int) {
+	if w.buffer.Len() == 0 {
+		w.resp.StatusCode = statusCode
 	}
 }
 
-// StatusCode returns the status code of the response.
-func (r *Response) StatusCode() int {
-	return r.statusCode
-}
-
 // Write implements the io.Writer interface.
-func (r *Response) Write(bs []byte) (int, error) {
-	r.body = append(r.body, bs...)
-	return len(r.body), nil
+func (w *ResponseWriter) Write(bs []byte) (int, error) {
+	return w.buffer.Write(bs)
 }
 
-// Body returns a copy of the body of the response.
-func (r *Response) Body() []byte {
-	bs := make([]byte, len(r.body))
-	copy(bs, r.body)
-	return bs
+// finalize finalizes the usage of the response writer.
+func (w *ResponseWriter) finalize(r *http.Request) {
+	w.resp.ContentLength = int64(w.buffer.Len())
+	w.resp.Request = r
+}
+
+//--------------------
+// RESPONSE HELPER
+//--------------------
+
+// BodyAsString reads the whole body and simply interprets it as string.
+func BodyAsString(r *http.Response) (string, error) {
+	bs, err := ioutil.ReadAll(r.Body)
+	return string(bs), err
+}
+
+// BodyAsJSON reads the whole body and decodes the JSON content into the
+// given object.
+func BodyAsJSON(r *http.Response, obj interface{}) error {
+	return json.NewDecoder(r.Body).Decode(obj)
 }
 
 //--------------------
@@ -94,15 +115,16 @@ func NewFuncSimulator(f http.HandlerFunc, pps ...Preprocessor) *Simulator {
 
 // Do executes first all registered preprocessors and then lets
 // the handler executes it. The build response is returned.
-func (s *Simulator) Do(r *http.Request) (*Response, error) {
+func (s *Simulator) Do(r *http.Request) (*http.Response, error) {
 	for _, pp := range s.pps {
 		if err := pp(r); err != nil {
 			return nil, err
 		}
 	}
-	rw := newResponse()
+	rw := newResponseWriter()
 	s.h.ServeHTTP(rw, r)
-	return rw, nil
+	rw.finalize(r)
+	return rw.resp, nil
 }
 
 // EOF

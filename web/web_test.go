@@ -50,11 +50,10 @@ func TestSimpleRequests(t *testing.T) {
 
 		resp, err := s.Do(req)
 		assert.NoError(err)
-		assert.Equal(resp.StatusCode(), http.StatusOK)
-
-		body := resp.Body()
-
-		assert.Equal(string(body), test.expected)
+		assert.Equal(resp.StatusCode, http.StatusOK)
+		body, err := web.BodyAsString(resp)
+		assert.NoError(err)
+		assert.Equal(body, test.expected)
 	}
 }
 
@@ -72,7 +71,7 @@ func TestResponseCode(t *testing.T) {
 	assert.NoError(err)
 	resp, err := s.Do(req)
 	assert.NoError(err)
-	assert.Equal(resp.StatusCode(), http.StatusPartialContent)
+	assert.Equal(resp.StatusCode, http.StatusPartialContent)
 
 	// Illegally set status after body.
 	s = web.NewFuncSimulator(func(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +82,7 @@ func TestResponseCode(t *testing.T) {
 	assert.NoError(err)
 	resp, err = s.Do(req)
 	assert.NoError(err)
-	assert.Equal(resp.StatusCode(), http.StatusOK)
+	assert.Equal(resp.StatusCode, http.StatusOK)
 }
 
 // TestPreprocessors verifies that preprocessors are correctly modifying
@@ -120,11 +119,10 @@ func TestPreprocessors(t *testing.T) {
 
 		resp, err := s.Do(req)
 		assert.NoError(err)
-		assert.Equal(resp.StatusCode(), http.StatusOK)
-
-		body := resp.Body()
-
-		assert.Equal(string(body), test.expected)
+		assert.Equal(resp.StatusCode, http.StatusOK)
+		body, err := web.BodyAsString(resp)
+		assert.NoError(err)
+		assert.Equal(body, test.expected)
 	}
 }
 
