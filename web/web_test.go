@@ -65,10 +65,12 @@ func TestJSONBody(t *testing.T) {
 	s := web.NewFuncSimulator(func(w http.ResponseWriter, r *http.Request) {
 		b, err := ioutil.ReadAll(r.Body)
 		assert.NoError(err)
-		w.Write(b)
+		_, err = w.Write(b)
+		assert.NoError(err)
 	})
 	req, err := http.NewRequest(http.MethodGet, "https://localhost:8080/", nil)
-	web.JSONToBody(data{"correct", 12345, true}, req)
+	assert.NoError(err)
+	err = web.JSONToBody(data{"correct", 12345, true}, req)
 	assert.NoError(err)
 	resp, err := s.Do(req)
 	assert.NoError(err)
@@ -82,7 +84,8 @@ func TestJSONBody(t *testing.T) {
 
 	// Failing marshalling data.
 	s = web.NewFuncSimulator(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("{xyz)[]"))
+		_, err := w.Write([]byte("{xyz)[]"))
+		assert.NoError(err)
 	})
 	req, err = http.NewRequest(http.MethodGet, "https://localhost:8080/", nil)
 	web.JSONToBody(data{"correct", 12345, true}, req)
