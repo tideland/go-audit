@@ -13,8 +13,9 @@
 
 * `asserts` provides routines for assertions helpful in tests and validation
 * `capture` allows capturing of STDOUT and STDERR
-* `environments` provides setting of environment variables, creation of temporary directories, and running web servers for tests
+* `environments` provides setting of environment variables and creation of temporary test directories
 * `generators` simplifies generation of test data; with a fixed random on demand even repeatable
+* `web` allows simple tests of web handlers
 
 I hope you like it. ;)
 
