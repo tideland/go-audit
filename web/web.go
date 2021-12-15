@@ -70,18 +70,34 @@ func (w *ResponseWriter) finalize(r *http.Request) {
 }
 
 //--------------------
-// RESPONSE HELPER
+// BODY HELPER
 //--------------------
 
-// BodyAsString reads the whole body and simply interprets it as string.
-func BodyAsString(r *http.Response) (string, error) {
+// StringToBody sets the request body to a given string.
+func StringToBody(s string, r *http.Request) {
+	r.Body = ioutil.NopCloser(bytes.NewBufferString(s))
+}
+
+// JSONToBody sets the request body to the JSON representation of
+// the given object.
+func JSONToBody(obj interface{}, r *http.Request) error {
+	b := bytes.NewBuffer(nil)
+	if err := json.NewEncoder(b).Encode(obj); err != nil {
+		return err
+	}
+	r.Body = ioutil.NopCloser(b)
+	return nil
+}
+
+// BodyToString reads the whole body and simply interprets it as string.
+func BodyToString(r *http.Response) (string, error) {
 	bs, err := ioutil.ReadAll(r.Body)
 	return string(bs), err
 }
 
-// BodyAsJSON reads the whole body and decodes the JSON content into the
+// BodyToJSON reads the whole body and decodes the JSON content into the
 // given object.
-func BodyAsJSON(r *http.Response, obj interface{}) error {
+func BodyToJSON(r *http.Response, obj interface{}) error {
 	return json.NewDecoder(r.Body).Decode(obj)
 }
 

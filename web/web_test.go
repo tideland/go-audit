@@ -51,10 +51,48 @@ func TestSimpleRequests(t *testing.T) {
 		resp, err := s.Do(req)
 		assert.NoError(err)
 		assert.Equal(resp.StatusCode, http.StatusOK)
-		body, err := web.BodyAsString(resp)
+		body, err := web.BodyToString(resp)
 		assert.NoError(err)
 		assert.Equal(body, test.expected)
 	}
+}
+
+// TestJSONBody verifies the reading and writing of JSON bodies.
+func TestJSONBody(t *testing.T) {
+	assert := asserts.NewTesting(t, asserts.FailStop)
+
+	// Correctly marshalling data.
+	s := web.NewFuncSimulator(func(w http.ResponseWriter, r *http.Request) {
+		b, err := ioutil.ReadAll(r.Body)
+		assert.NoError(err)
+		w.Write(b)
+	})
+	req, err := http.NewRequest(http.MethodGet, "https://localhost:8080/", nil)
+	web.JSONToBody(data{"correct", 12345, true}, req)
+	assert.NoError(err)
+	resp, err := s.Do(req)
+	assert.NoError(err)
+	assert.Equal(resp.StatusCode, http.StatusOK)
+	var obj data
+	err = web.BodyToJSON(resp, &obj)
+	assert.NoError(err)
+	assert.Equal(obj.A, "correct")
+	assert.Equal(obj.B, 12345)
+	assert.Equal(obj.C, true)
+
+	// Failing marshalling data.
+	s = web.NewFuncSimulator(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("{xyz)[]"))
+	})
+	req, err = http.NewRequest(http.MethodGet, "https://localhost:8080/", nil)
+	web.JSONToBody(data{"correct", 12345, true}, req)
+	assert.NoError(err)
+	resp, err = s.Do(req)
+	assert.NoError(err)
+	assert.Equal(resp.StatusCode, http.StatusOK)
+	err = web.BodyToJSON(resp, &obj)
+	assert.ErrorContains(err, "invalid character")
+
 }
 
 // TestResponseCode verifies that the status code cannot be changed after
@@ -120,7 +158,7 @@ func TestPreprocessors(t *testing.T) {
 		resp, err := s.Do(req)
 		assert.NoError(err)
 		assert.Equal(resp.StatusCode, http.StatusOK)
-		body, err := web.BodyAsString(resp)
+		body, err := web.BodyToString(resp)
 		assert.NoError(err)
 		assert.Equal(body, test.expected)
 	}
@@ -154,6 +192,13 @@ func (h *echoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "m(%s) p(%s) ct(%s) a(%s) b(%s)", m, p, ct, a, string(bs))
+}
+
+// data is used when testing the JSON marshalling.
+type data struct {
+	A string `json:"a"`
+	B int    `json:"b"`
+	C bool   `json:"c"`
 }
 
 // EOF
