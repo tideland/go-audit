@@ -5,10 +5,24 @@
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
 
-// Package web helps testing web handlers. Those can be registered,
-// standard web requests can be sent for execution and a response collects
-// the response for analysis. Automation helps to execute steps upfront
-// passing the request to the handler.
+// Package web helps testing web handlers. A simulator can be started
+// with the handler to test. Then standard http requests can be sent
+// and the returned http responses can be analyzed.
+//
+//    h := NewMyHandler()
+//    s := web.NewSimulator(h)
+//
+//    req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/", nil)
+//    assert.NoError(err)
+//
+//    resp, err := s.Do(req)
+//    assert.NoError(err)
+//    assert.Equal(resp.StatusCode, http.StatusOK)
+//    body, err := web.BodyToString(resp)
+//    assert.NoError(err)
+//    assert.Equal(body, test.expected)
+//
+// Some smaller functions help working with the requests and responses.
 package web // import "tideland.dev/go/audit/web"
 
 // EOF
