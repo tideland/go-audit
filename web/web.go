@@ -14,6 +14,7 @@ package web // import "tideland.dev/go/audit/web"
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -33,7 +34,6 @@ func newResponseWriter() *ResponseWriter {
 	w := &ResponseWriter{
 		buffer: bytes.NewBuffer(nil),
 		resp: &http.Response{
-			Status:        "200 OK",
 			StatusCode:    http.StatusOK,
 			Proto:         "HTTP/1.0",
 			ProtoMajor:    1,
@@ -65,6 +65,7 @@ func (w *ResponseWriter) Write(bs []byte) (int, error) {
 
 // finalize finalizes the usage of the response writer.
 func (w *ResponseWriter) finalize(r *http.Request) {
+	w.resp.Status = fmt.Sprintf("%d %s", w.resp.StatusCode, http.StatusText(w.resp.StatusCode))
 	w.resp.ContentLength = int64(w.buffer.Len())
 	w.resp.Request = r
 }
