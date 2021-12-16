@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.6.2
+
+* (C) Migrate web response to http.Response
+* (A) Add helper for request body
+
+## v0.6.1
+
+* (C) Change web response to use the standard http.Response
+* (A) Add helper for response body
+
 ## v0.6.0
 
 * (A) New web package for handler tests
