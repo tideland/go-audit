@@ -87,7 +87,6 @@ func TestJSONBody(t *testing.T) {
 		assert.NoError(err)
 	})
 	req = s.CreateRequest(http.MethodGet, "https://localhost:8080/", nil)
-	req, err = http.NewRequest(http.MethodGet, "https://localhost:8080/", nil)
 	assert.NoError(err)
 	err = web.JSONToBody(data{"correct", 12345, true}, req)
 	assert.NoError(err)
