@@ -12,8 +12,7 @@
 //    h := NewMyHandler()
 //    s := web.NewSimulator(h)
 //
-//    req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/", nil)
-//    assert.NoError(err)
+//    req := s.CreateRequest(http.MethodGet, "http://localhost:8080/", nil)
 //
 //    resp, err := s.Do(req)
 //    assert.NoError(err)
