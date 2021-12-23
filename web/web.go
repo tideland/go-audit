@@ -14,61 +14,11 @@ package web // import "tideland.dev/go/audit/web"
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 )
-
-//--------------------
-// RESPONSE WRITER
-//--------------------
-
-// ResponseWriter contains the response of the simulated HTTP request.
-type ResponseWriter struct {
-	buffer *bytes.Buffer
-	resp   *http.Response
-}
-
-// newResponseWriter creates a new initialized response writer.
-func newResponseWriter() *ResponseWriter {
-	w := &ResponseWriter{
-		buffer: bytes.NewBuffer(nil),
-		resp: &http.Response{
-			StatusCode:    http.StatusOK,
-			Proto:         "HTTP/1.0",
-			ProtoMajor:    1,
-			ProtoMinor:    0,
-			Header:        make(http.Header),
-			ContentLength: -1,
-		},
-	}
-	w.resp.Body = ioutil.NopCloser(w.buffer)
-	return w
-}
-
-// Header returns the header values of the response.
-func (w *ResponseWriter) Header() http.Header {
-	return w.resp.Header
-}
-
-// WriteHeader writes the status code of the response.
-func (w *ResponseWriter) WriteHeader(statusCode int) {
-	if w.buffer.Len() == 0 {
-		w.resp.StatusCode = statusCode
-	}
-}
-
-// Write implements the io.Writer interface.
-func (w *ResponseWriter) Write(bs []byte) (int, error) {
-	return w.buffer.Write(bs)
-}
-
-// finalize finalizes the usage of the response writer.
-func (w *ResponseWriter) finalize(r *http.Request) {
-	w.resp.Status = fmt.Sprintf("%d %s", w.resp.StatusCode, http.StatusText(w.resp.StatusCode))
-	w.resp.ContentLength = int64(w.buffer.Len())
-	w.resp.Request = r
-}
 
 //--------------------
 // BODY HELPER
@@ -130,6 +80,11 @@ func NewFuncSimulator(f http.HandlerFunc, pps ...Preprocessor) *Simulator {
 	return NewSimulator(f, pps...)
 }
 
+// CreateRequest creates a request for the simulator.
+func (s *Simulator) CreateRequest(method, target string, body io.Reader) *http.Request {
+	return httptest.NewRequest(method, target, body)
+}
+
 // Do executes first all registered preprocessors and then lets
 // the handler executes it. The build response is returned.
 func (s *Simulator) Do(r *http.Request) (*http.Response, error) {
@@ -138,10 +93,9 @@ func (s *Simulator) Do(r *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	}
-	rw := newResponseWriter()
-	s.h.ServeHTTP(rw, r)
-	rw.finalize(r)
-	return rw.resp, nil
+	w := httptest.NewRecorder()
+	s.h.ServeHTTP(w, r)
+	return w.Result(), nil
 }
 
 // EOF

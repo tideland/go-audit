@@ -109,8 +109,7 @@ func TestResponseCode(t *testing.T) {
 		w.WriteHeader(http.StatusPartialContent)
 		fmt.Fprint(w, "body")
 	})
-	req, err := http.NewRequest(http.MethodGet, "https://localhost:8080/", nil)
-	assert.NoError(err)
+	req := s.CreateRequest(http.MethodGet, "https://localhost:8080/", nil)
 	resp, err := s.Do(req)
 	assert.NoError(err)
 	assert.Equal(resp.StatusCode, http.StatusPartialContent)
@@ -120,7 +119,7 @@ func TestResponseCode(t *testing.T) {
 		fmt.Fprint(w, "body")
 		w.WriteHeader(http.StatusPartialContent)
 	})
-	req, err = http.NewRequest(http.MethodGet, "https://localhost:8080/", nil)
+	req = s.CreateRequest(http.MethodGet, "https://localhost:8080/", nil)
 	assert.NoError(err)
 	resp, err = s.Do(req)
 	assert.NoError(err)
@@ -149,15 +148,14 @@ func TestPreprocessors(t *testing.T) {
 		body     io.Reader
 		expected string
 	}{
-		{http.MethodGet, nil, "m(GET) p(/test/) ct() a(text/plain) b()"},
+		{http.MethodGet, nil, "m(GET) p(/test/) ct(text/plain) a(text/plain) b()"},
 		{http.MethodPost, strings.NewReader("posting data"), "m(POST) p(/test/) ct(text/plain) a(text/plain) b(posting data)"},
 		{http.MethodPut, strings.NewReader("posting data"), "m(PUT) p(/test/) ct(text/plain) a(text/plain) b(posting data)"},
-		{http.MethodDelete, nil, "m(DELETE) p(/test/) ct() a(text/plain) b()"},
+		{http.MethodDelete, nil, "m(DELETE) p(/test/) ct(text/plain) a(text/plain) b()"},
 	}
 	for i, test := range tests {
 		assert.Logf("no %d: method %q", i, test.method)
-		req, err := http.NewRequest(test.method, "http://localhost:8080/test/", test.body)
-		assert.NoError(err)
+		req := s.CreateRequest(test.method, "http://localhost:8080/test/", test.body)
 
 		resp, err := s.Do(req)
 		assert.NoError(err)
