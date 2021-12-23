@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.3
+
+* (C) Web package now uses httptest package
+
 ## v0.6.2
 
 * (C) Migrate web response to http.Response
