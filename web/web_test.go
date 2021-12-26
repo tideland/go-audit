@@ -68,7 +68,7 @@ func TestJSONBody(t *testing.T) {
 		_, err = w.Write(b)
 		assert.NoError(err)
 	})
-	req := s.CreateRequest(http.MethodGet, "https://localhost:8080/", nil)
+	req := s.CreateRequest(http.MethodPost, "https://localhost:8080/", nil)
 	err := web.JSONToBody(data{"correct", 12345, true}, req)
 	assert.NoError(err)
 	resp, err := s.Do(req)
@@ -87,7 +87,6 @@ func TestJSONBody(t *testing.T) {
 		assert.NoError(err)
 	})
 	req = s.CreateRequest(http.MethodGet, "https://localhost:8080/", nil)
-	assert.NoError(err)
 	err = web.JSONToBody(data{"correct", 12345, true}, req)
 	assert.NoError(err)
 	resp, err = s.Do(req)
@@ -95,7 +94,67 @@ func TestJSONBody(t *testing.T) {
 	assert.Equal(resp.StatusCode, http.StatusOK)
 	err = web.BodyToJSON(resp, &obj)
 	assert.ErrorContains(err, "invalid character")
+}
 
+// TestConvenience verifies the correct working of the convenient helper
+// methods.
+func TestConvenience(t *testing.T) {
+	assert := asserts.NewTesting(t, asserts.FailStop)
+
+	// Correctly marshalling data.
+	s := web.NewFuncSimulator(func(w http.ResponseWriter, r *http.Request) {
+		contentType := r.Header.Get("content-type")
+		w.Header().Add("content-type", contentType)
+		if r.Method == http.MethodGet {
+			b := []byte(`{"A":"first", "B":54321, "C":false}`)
+			_, err := w.Write(b)
+			assert.NoError(err)
+			return
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		assert.NoError(err)
+		_, err = w.Write(b)
+		assert.NoError(err)
+	})
+
+	// Step 1: GET.
+	resp, err := s.Get("https://localhost:8080/")
+	assert.NoError(err)
+	assert.Equal(resp.StatusCode, http.StatusOK)
+	var obj data
+	err = web.BodyToJSON(resp, &obj)
+	assert.NoError(err)
+	assert.Equal(obj.A, "first")
+	assert.Equal(obj.B, 54321)
+	assert.Equal(obj.C, false)
+
+	// Steo 2: Simple POST.
+	resp, err = s.Post("https://localhost:8080/", "text/plain", strings.NewReader("second"))
+	assert.NoError(err)
+	assert.Equal(resp.StatusCode, http.StatusOK)
+	text, err := web.BodyToString(resp)
+	assert.NoError(err)
+	assert.Equal(text, "second")
+
+	// Steo 3: Simple POST text string.
+	resp, err = s.PostText("https://localhost:8080/", "third")
+	assert.NoError(err)
+	assert.Equal(resp.StatusCode, http.StatusOK)
+	assert.Equal(resp.Header.Get("content-type"), "text/plain")
+	text, err = web.BodyToString(resp)
+	assert.NoError(err)
+	assert.Equal(text, "third")
+
+	// Steo 4: Simple POST JSON object.
+	resp, err = s.PostJSON("https://localhost:8080/", data{"fourth", 10101, true})
+	assert.NoError(err)
+	assert.Equal(resp.Header.Get("content-type"), "application/json")
+	assert.Equal(resp.StatusCode, http.StatusOK)
+	err = web.BodyToJSON(resp, &obj)
+	assert.NoError(err)
+	assert.Equal(obj.A, "fourth")
+	assert.Equal(obj.B, 10101)
+	assert.Equal(obj.C, true)
 }
 
 // TestResponseCode verifies that the status code cannot be changed after

@@ -98,4 +98,40 @@ func (s *Simulator) Do(r *http.Request) (*http.Response, error) {
 	return w.Result(), nil
 }
 
+// Get conveniently executes a simple GET request.
+func (s *Simulator) Get(target string) (*http.Response, error) {
+	req := s.CreateRequest(http.MethodGet, target, nil)
+
+	return s.Do(req)
+}
+
+// Post conveniently executes a simple POST request.
+func (s *Simulator) Post(target, contentType string, body io.Reader) (*http.Response, error) {
+	req := s.CreateRequest(http.MethodPost, target, body)
+
+	return s.Do(req)
+}
+
+// PostText conveniently executes a simple POST request with the given string body.
+func (s *Simulator) PostText(target, body string) (*http.Response, error) {
+	req := s.CreateRequest(http.MethodPost, target, nil)
+	req.Header.Set("Content-Type", "text/plain")
+
+	StringToBody(body, req)
+
+	return s.Do(req)
+}
+
+// PostJSON conveniently executes a simple POST request with the given interface  body.
+func (s *Simulator) PostJSON(target string, body interface{}) (*http.Response, error) {
+	req := s.CreateRequest(http.MethodPost, target, nil)
+	req.Header.Set("Content-Type", "application/json")
+
+	if err := JSONToBody(body, req); err != nil {
+		return nil, err
+	}
+
+	return s.Do(req)
+}
+
 // EOF
