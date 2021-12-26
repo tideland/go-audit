@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.4
+
+* (C) Web simulator now provides some convenience methods
+
 ## v0.6.3
 
 * (C) Web package now uses httptest package
