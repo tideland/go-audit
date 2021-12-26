@@ -103,6 +103,8 @@ func TestConvenience(t *testing.T) {
 
 	// Correctly marshalling data.
 	s := web.NewFuncSimulator(func(w http.ResponseWriter, r *http.Request) {
+		contentType := r.Header.Get("content-type")
+		w.Header().Add("content-type", contentType)
 		if r.Method == http.MethodGet {
 			b := []byte(`{"A":"first", "B":54321, "C":false}`)
 			_, err := w.Write(b)
@@ -134,17 +136,19 @@ func TestConvenience(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal(text, "second")
 
-	// Steo 3: Simple POST string.
-	resp, err = s.PostString("https://localhost:8080/", "text/plain", "third")
+	// Steo 3: Simple POST text string.
+	resp, err = s.PostText("https://localhost:8080/", "third")
 	assert.NoError(err)
 	assert.Equal(resp.StatusCode, http.StatusOK)
+	assert.Equal(resp.Header.Get("content-type"), "text/plain")
 	text, err = web.BodyToString(resp)
 	assert.NoError(err)
 	assert.Equal(text, "third")
 
 	// Steo 4: Simple POST JSON object.
-	resp, err = s.PostJSON("https://localhost:8080/", "content/json", data{"fourth", 10101, true})
+	resp, err = s.PostJSON("https://localhost:8080/", data{"fourth", 10101, true})
 	assert.NoError(err)
+	assert.Equal(resp.Header.Get("content-type"), "application/json")
 	assert.Equal(resp.StatusCode, http.StatusOK)
 	err = web.BodyToJSON(resp, &obj)
 	assert.NoError(err)

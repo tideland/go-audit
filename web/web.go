@@ -112,9 +112,10 @@ func (s *Simulator) Post(target, contentType string, body io.Reader) (*http.Resp
 	return s.Do(req)
 }
 
-// PostString conveniently executes a simple POST request with the given string body.
-func (s *Simulator) PostString(target, contentType, body string) (*http.Response, error) {
+// PostText conveniently executes a simple POST request with the given string body.
+func (s *Simulator) PostText(target, body string) (*http.Response, error) {
 	req := s.CreateRequest(http.MethodPost, target, nil)
+	req.Header.Set("Content-Type", "text/plain")
 
 	StringToBody(body, req)
 
@@ -122,8 +123,9 @@ func (s *Simulator) PostString(target, contentType, body string) (*http.Response
 }
 
 // PostJSON conveniently executes a simple POST request with the given interface  body.
-func (s *Simulator) PostJSON(target, contentType string, body interface{}) (*http.Response, error) {
+func (s *Simulator) PostJSON(target string, body interface{}) (*http.Response, error) {
 	req := s.CreateRequest(http.MethodPost, target, nil)
+	req.Header.Set("Content-Type", "application/json")
 
 	if err := JSONToBody(body, req); err != nil {
 		return nil, err
