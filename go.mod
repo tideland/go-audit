@@ -1,3 +1,3 @@
 module tideland.dev/go/audit
 
-go 1.17.6
+go 1.17
