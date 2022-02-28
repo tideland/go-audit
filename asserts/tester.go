@@ -270,4 +270,4 @@ func isValidPath(path string) (bool, error) {
 	return true, err
 }
 
-// EOF
+// EOregexF
