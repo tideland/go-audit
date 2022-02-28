@@ -208,6 +208,9 @@ func (a *Asserts) ErrorMatch(obtained interface{}, regex string, msgs ...string)
 
 // ErrorContains tests if the obtained error contains a given string.
 func (a *Asserts) ErrorContains(obtained interface{}, part string, msgs ...string) bool {
+	if obtained == nil {
+		return a.failer.Fail(ErrorContains, nil, part, "error is nil")
+	}
 	err := ifaceToError(obtained)
 	if !isSubstring(part, err.Error()) {
 		return a.failer.Fail(ErrorContains, obtained, part, msgs...)

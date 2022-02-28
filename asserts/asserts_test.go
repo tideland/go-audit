@@ -322,6 +322,7 @@ func TestAssertErrorMatch(t *testing.T) {
 	successfulAssert.ErrorMatch(errA, "oops,.*", "should not fail")
 	successfulAssert.ErrorMatch(errB, "oops,.*", "should not fail")
 	failingAssert.ErrorMatch(errA, "foo", "should fail and be logged")
+	failingAssert.ErrorMatch(nil, "nil", "should fail and be logged")
 }
 
 // TestAssertErrorContains tests the ErrorContains() assertion.
@@ -335,6 +336,7 @@ func TestAssertErrorContains(t *testing.T) {
 	successfulAssert.ErrorContains(errA, "an error", "should not fail")
 	successfulAssert.ErrorContains(errB, "an error", "should not fail")
 	failingAssert.ErrorContains(errA, "foo", "should fail and be logged")
+	failingAssert.ErrorContains(nil, "nil", "should fail and be logged")
 }
 
 // TestAssertImplementor tests the Implementor() assertion.
@@ -611,7 +613,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:598:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:600:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -619,7 +621,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:599:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:601:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.5
+
+* (C) Fix checking for nil error in Asserts.ErrorContains()
+
 ## v0.6.4
 
 * (C) Web simulator now provides some convenience methods
