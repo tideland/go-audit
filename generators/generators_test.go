@@ -373,6 +373,23 @@ func TestTimes(t *testing.T) {
 	}
 }
 
+// TestConcurrency simply produces a number of concurrent calls simply to let
+// the race detection do its work.
+func TestConcurrency(t *testing.T) {
+	gen := generators.New(generators.FixedRand())
+
+	run := func() {
+		go gen.Byte(0, 255)
+		go gen.Int(0, 9999)
+		go gen.Duration(25*time.Millisecond, 75*time.Millisecond)
+	}
+	for i := 0; i < 100; i++ {
+		go run()
+	}
+
+	time.Sleep(3 * time.Second)
+}
+
 //--------------------
 // HELPER
 //--------------------

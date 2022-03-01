@@ -3,6 +3,7 @@
 ## v0.6.5
 
 * (C) Fix checking for nil error in Asserts.ErrorContains()
+* (C) Fix generator to resist concurrent calls
 
 ## v0.6.4
 
