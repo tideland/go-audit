@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -118,13 +119,16 @@ func UUIDString(uuid [16]byte) string {
 // Generator is responsible for generating different random data
 // based on a random number generator.
 type Generator struct {
+	mu   sync.Mutex
 	rand *rand.Rand
 }
 
 // New returns a new generator using the passed random number
 // generator.
 func New(rand *rand.Rand) *Generator {
-	return &Generator{rand}
+	return &Generator{
+		rand: rand,
+	}
 }
 
 // Byte generates a byte between lo and hi including
@@ -137,8 +141,19 @@ func (g *Generator) Byte(lo, hi byte) byte {
 		lo, hi = hi, lo
 	}
 	i := int(hi - lo)
+	g.mu.Lock()
 	n := byte(g.rand.Intn(i))
+	g.mu.Unlock()
 	return lo + n
+}
+
+// Bytes generates a slice of random bytes.
+func (g *Generator) Bytes(lo, hi byte, count int) []byte {
+	bytes := make([]byte, count)
+	for i := 0; i < count; i++ {
+		bytes[i] = g.Byte(lo, hi)
+	}
+	return bytes
 }
 
 // Int generates an int between lo and hi including
@@ -150,7 +165,13 @@ func (g *Generator) Int(lo, hi int) int {
 	if lo > hi {
 		lo, hi = hi, lo
 	}
-	n := g.rand.Intn(hi - lo + 1)
+	i := hi - lo + 1
+	if i < 1 {
+		return 1
+	}
+	g.mu.Lock()
+	n := g.rand.Intn(i)
+	g.mu.Unlock()
 	return lo + n
 }
 
@@ -161,15 +182,6 @@ func (g *Generator) Ints(lo, hi, count int) []int {
 		ints[i] = g.Int(lo, hi)
 	}
 	return ints
-}
-
-// Bytes generates a slice of random bytes.
-func (g *Generator) Bytes(lo, hi byte, count int) []byte {
-	bytes := make([]byte, count)
-	for i := 0; i < count; i++ {
-		bytes[i] = g.Byte(lo, hi)
-	}
-	return bytes
 }
 
 // UUID generates a 16 byte long random byte array. So it's
@@ -483,7 +495,9 @@ func (g *Generator) Duration(lo, hi time.Duration) time.Duration {
 	if lo > hi {
 		lo, hi = hi, lo
 	}
+	g.mu.Lock()
 	n := g.rand.Int63n(int64(hi) - int64(lo) + 1)
+	g.mu.Unlock()
 	return lo + time.Duration(n)
 }
 
