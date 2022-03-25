@@ -246,16 +246,16 @@ func TestAssertContains(t *testing.T) {
 	successfulAssert.Contains(4711, []int{1, 2, 3, 4711, 5, 6, 7, 8, 9})
 	failingAssert.Contains(4711, "12345-4711-67890")
 	failingAssert.Contains(4711, "foo")
-	failingAssert.Contains(4711, []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
-	successfulAssert.Contains("4711", []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	failingAssert.Contains(4711, []any{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	successfulAssert.Contains("4711", []any{1, "2", 3, "4711", 5, 6, 7, 8, 9})
 	failingAssert.Contains("foobar", []byte("the quick brown fox jumps over the lazy dog"))
 
 	successfulAssert.NotContains("yadda", "foobarbaz")
 	successfulAssert.NotContains(123, []int{1, 2, 3, 4711, 5, 6, 7, 8, 9})
 	failingAssert.NotContains("4711", "12345-4711-67890")
 	failingAssert.NotContains("oba", "foobar")
-	failingAssert.NotContains("4711", []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
-	successfulAssert.NotContains(4711, []interface{}{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	failingAssert.NotContains("4711", []any{1, "2", 3, "4711", 5, 6, 7, 8, 9})
+	successfulAssert.NotContains(4711, []any{1, "2", 3, "4711", 5, 6, 7, 8, 9})
 	failingAssert.NotContains("fox", []byte("the quick brown fox jumps over the lazy dog"))
 }
 
@@ -497,7 +497,7 @@ func TestAssertWaitGroup(t *testing.T) {
 func TestAssertWaitTested(t *testing.T) {
 	successfulAssert := successfulAsserts(t)
 	failingAssert := failingAsserts(t)
-	tester := func(v interface{}) error {
+	tester := func(v any) error {
 		b, ok := v.(bool)
 		if !ok || b == false {
 			return errors.New("illegal value")
@@ -687,11 +687,11 @@ func (f *metaFailer) IncrCallstackOffset() func() {
 	return func() {}
 }
 
-func (f *metaFailer) Logf(format string, args ...interface{}) {
+func (f *metaFailer) Logf(format string, args ...any) {
 	f.t.Logf(format, args...)
 }
 
-func (f *metaFailer) Fail(test asserts.Test, obtained, expected interface{}, msgs ...string) bool {
+func (f *metaFailer) Fail(test asserts.Test, obtained, expected any, msgs ...string) bool {
 	if f.fail {
 		f.t.FailNow()
 	}

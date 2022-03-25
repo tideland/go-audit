@@ -31,7 +31,7 @@ func StringToBody(s string, r *http.Request) {
 
 // JSONToBody sets the request body to the JSON representation of
 // the given object.
-func JSONToBody(obj interface{}, r *http.Request) error {
+func JSONToBody(obj any, r *http.Request) error {
 	b := bytes.NewBuffer(nil)
 	if err := json.NewEncoder(b).Encode(obj); err != nil {
 		return err
@@ -48,7 +48,7 @@ func BodyToString(r *http.Response) (string, error) {
 
 // BodyToJSON reads the whole body and decodes the JSON content into the
 // given object.
-func BodyToJSON(r *http.Response, obj interface{}) error {
+func BodyToJSON(r *http.Response, obj any) error {
 	return json.NewDecoder(r.Body).Decode(obj)
 }
 
@@ -123,7 +123,7 @@ func (s *Simulator) PostText(target, body string) (*http.Response, error) {
 }
 
 // PostJSON conveniently executes a simple POST request with the given interface  body.
-func (s *Simulator) PostJSON(target string, body interface{}) (*http.Response, error) {
+func (s *Simulator) PostJSON(target string, body any) (*http.Response, error) {
 	req := s.CreateRequest(http.MethodPost, target, nil)
 	req.Header.Set("Content-Type", "application/json")
 

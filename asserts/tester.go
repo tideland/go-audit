@@ -33,7 +33,7 @@ func isTrue(obtained bool) bool {
 }
 
 // isNil checks if obtained is nil in a safe way.
-func isNil(obtained interface{}) bool {
+func isNil(obtained any) bool {
 	if obtained == nil {
 		// Standard test.
 		return true
@@ -49,7 +49,7 @@ func isNil(obtained interface{}) bool {
 }
 
 // isEqual checks if obtained and expected are equal.
-func isEqual(obtained, expected interface{}) bool {
+func isEqual(obtained, expected any) bool {
 	return reflect.DeepEqual(obtained, expected)
 }
 
@@ -64,7 +64,7 @@ func isAbout(obtained, expected, extent float64) bool {
 }
 
 // isInRange checks for range assertions
-func isInRange(obtained, low, high interface{}) (bool, error) {
+func isInRange(obtained, low, high any) (bool, error) {
 	// First standard types.
 	switch o := obtained.(type) {
 	case byte:
@@ -133,7 +133,7 @@ func isInRange(obtained, low, high interface{}) (bool, error) {
 
 // contains checks if the part type is matching to the full type and
 // if the full data contains the part data.
-func contains(part, full interface{}) (bool, error) {
+func contains(part, full any) (bool, error) {
 	switch fullValue := full.(type) {
 	case string:
 		// Content of a string.
@@ -194,7 +194,7 @@ func isMatching(obtained, regex string) (bool, error) {
 }
 
 // isImplementor checks if obtained implements the expected interface variable pointer.
-func isImplementor(obtained, expected interface{}) (bool, error) {
+func isImplementor(obtained, expected any) (bool, error) {
 	obtainedValue := reflect.ValueOf(obtained)
 	expectedValue := reflect.ValueOf(expected)
 	if !obtainedValue.IsValid() {
@@ -207,14 +207,14 @@ func isImplementor(obtained, expected interface{}) (bool, error) {
 }
 
 // isAssignable checks if the types of obtained and expected are assignable.
-func isAssignable(obtained, expected interface{}) bool {
+func isAssignable(obtained, expected any) bool {
 	obtainedValue := reflect.ValueOf(obtained)
 	expectedValue := reflect.ValueOf(expected)
 	return obtainedValue.Type().AssignableTo(expectedValue.Type())
 }
 
 // hasLength checks the length of the obtained string, array, slice, map or channel.
-func hasLength(obtained interface{}, expected int) (bool, int, error) {
+func hasLength(obtained any, expected int) (bool, int, error) {
 	// Check using the lenable interface.
 	if ol, ok := obtained.(lenable); ok {
 		l := ol.Len()
@@ -239,7 +239,7 @@ func hasLength(obtained interface{}, expected int) (bool, int, error) {
 }
 
 // hasPanic checks if the passed function panics.
-func hasPanic(pf func(), reason interface{}) (ok bool) {
+func hasPanic(pf func(), reason any) (ok bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			// Panic, so far okay.

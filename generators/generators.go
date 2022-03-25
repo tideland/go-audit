@@ -213,7 +213,7 @@ func (g *Generator) FlipCoin(percent int) bool {
 }
 
 // OneOf returns one of the passed empty interfaces (aka values).
-func (g *Generator) OneOf(values ...interface{}) interface{} {
+func (g *Generator) OneOf(values ...any) any {
 	if len(values) == 0 {
 		return 0
 	}
