@@ -74,17 +74,12 @@ func (a *Asserts) IncrCallstackOffset() func() {
 	return a.failer.IncrCallstackOffset()
 }
 
-// Logf can be used to display helpful information during testing.
-func (a *Asserts) Logf(format string, args ...interface{}) {
-	a.failer.Logf(format, args...)
-}
-
 // OK is a convenient metatest depending in the obtained tyoe. In case
 // of a bool it has to be true, a func() bool has to return true, an int
 // has to be 0, a string has to be empty, and a func() error has to return
 // no error. Any else value has to be nil or in case of an ErrorProne its
 // Err() has to return nil.
-func (a *Asserts) OK(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) OK(obtained any, msgs ...string) bool {
 	switch o := obtained.(type) {
 	case bool:
 		return a.True(o, msgs...)
@@ -106,7 +101,7 @@ func (a *Asserts) OK(obtained interface{}, msgs ...string) bool {
 // has to be not 0, a string has to be not empty, and a func() error has to
 // return an error. Any else value has to be not nil or in case of an ErrorProne
 // its Err() has not to return nil.
-func (a *Asserts) NotOK(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) NotOK(obtained any, msgs ...string) bool {
 	switch o := obtained.(type) {
 	case bool:
 		return a.False(o, msgs...)
@@ -140,7 +135,7 @@ func (a *Asserts) False(obtained bool, msgs ...string) bool {
 }
 
 // Nil tests if obtained is nil.
-func (a *Asserts) Nil(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) Nil(obtained any, msgs ...string) bool {
 	if !isNil(obtained) {
 		return a.failer.Fail(Nil, obtained, nil, msgs...)
 	}
@@ -148,7 +143,7 @@ func (a *Asserts) Nil(obtained interface{}, msgs ...string) bool {
 }
 
 // NotNil tests if obtained is not nil.
-func (a *Asserts) NotNil(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) NotNil(obtained any, msgs ...string) bool {
 	if isNil(obtained) {
 		return a.failer.Fail(NotNil, obtained, nil, msgs...)
 	}
@@ -156,7 +151,7 @@ func (a *Asserts) NotNil(obtained interface{}, msgs ...string) bool {
 }
 
 // Equal tests if obtained and expected are equal.
-func (a *Asserts) Equal(obtained, expected interface{}, msgs ...string) bool {
+func (a *Asserts) Equal(obtained, expected any, msgs ...string) bool {
 	if !isEqual(obtained, expected) {
 		return a.failer.Fail(Equal, obtained, expected, msgs...)
 	}
@@ -164,7 +159,7 @@ func (a *Asserts) Equal(obtained, expected interface{}, msgs ...string) bool {
 }
 
 // Different tests if obtained and expected are different.
-func (a *Asserts) Different(obtained, expected interface{}, msgs ...string) bool {
+func (a *Asserts) Different(obtained, expected any, msgs ...string) bool {
 	if isEqual(obtained, expected) {
 		return a.failer.Fail(Different, obtained, expected, msgs...)
 	}
@@ -172,7 +167,7 @@ func (a *Asserts) Different(obtained, expected interface{}, msgs ...string) bool
 }
 
 // NoError tests if the obtained error or ErrorProne.Err() is nil.
-func (a *Asserts) NoError(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) NoError(obtained any, msgs ...string) bool {
 	err := ifaceToError(obtained)
 	if !isNil(err) {
 		return a.failer.Fail(NoError, err, nil, msgs...)
@@ -181,7 +176,7 @@ func (a *Asserts) NoError(obtained interface{}, msgs ...string) bool {
 }
 
 // AnyError tests if the obtained error or ErrorProne.Err() is not nil.
-func (a *Asserts) AnyError(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) AnyError(obtained any, msgs ...string) bool {
 	err := ifaceToError(obtained)
 	if isNil(err) {
 		return a.failer.Fail(AnyError, err, nil, msgs...)
@@ -191,7 +186,7 @@ func (a *Asserts) AnyError(obtained interface{}, msgs ...string) bool {
 
 // ErrorMatch tests if the obtained error as string matches a
 // regular expression.
-func (a *Asserts) ErrorMatch(obtained interface{}, regex string, msgs ...string) bool {
+func (a *Asserts) ErrorMatch(obtained any, regex string, msgs ...string) bool {
 	if obtained == nil {
 		return a.failer.Fail(ErrorMatch, nil, regex, "error is nil")
 	}
@@ -207,7 +202,7 @@ func (a *Asserts) ErrorMatch(obtained interface{}, regex string, msgs ...string)
 }
 
 // ErrorContains tests if the obtained error contains a given string.
-func (a *Asserts) ErrorContains(obtained interface{}, part string, msgs ...string) bool {
+func (a *Asserts) ErrorContains(obtained any, part string, msgs ...string) bool {
 	if obtained == nil {
 		return a.failer.Fail(ErrorContains, nil, part, "error is nil")
 	}
@@ -220,7 +215,7 @@ func (a *Asserts) ErrorContains(obtained interface{}, part string, msgs ...strin
 
 // Contains tests if the obtained data is part of the expected
 // string, array, or slice.
-func (a *Asserts) Contains(part, full interface{}, msgs ...string) bool {
+func (a *Asserts) Contains(part, full any, msgs ...string) bool {
 	contains, err := contains(part, full)
 	if err != nil {
 		return a.failer.Fail(Contains, part, full, "type missmatch: "+err.Error())
@@ -233,7 +228,7 @@ func (a *Asserts) Contains(part, full interface{}, msgs ...string) bool {
 
 // NotContains tests if the obtained data is not part of the expected
 // string, array, or slice.
-func (a *Asserts) NotContains(part, full interface{}, msgs ...string) bool {
+func (a *Asserts) NotContains(part, full any, msgs ...string) bool {
 	contains, err := contains(part, full)
 	if err != nil {
 		return a.failer.Fail(NotContains, part, full, "type missmatch: "+err.Error())
@@ -258,7 +253,7 @@ func (a *Asserts) About(obtained, expected, extent float64, msgs ...string) bool
 // strings, times, and duration. In case of obtained arrays,
 // slices, and maps low and high have to be ints for testing
 // the length.
-func (a *Asserts) Range(obtained, low, high interface{}, msgs ...string) bool {
+func (a *Asserts) Range(obtained, low, high any, msgs ...string) bool {
 	expected := &lowHigh{low, high}
 	inRange, err := isInRange(obtained, low, high)
 	if err != nil {
@@ -303,7 +298,7 @@ func (a *Asserts) Match(obtained, regex string, msgs ...string) bool {
 
 // Implementor tests if obtained implements the expected
 // interface variable pointer.
-func (a *Asserts) Implementor(obtained, expected interface{}, msgs ...string) bool {
+func (a *Asserts) Implementor(obtained, expected any, msgs ...string) bool {
 	implements, err := isImplementor(obtained, expected)
 	if err != nil {
 		return a.failer.Fail(Implementor, obtained, expected, err.Error())
@@ -315,7 +310,7 @@ func (a *Asserts) Implementor(obtained, expected interface{}, msgs ...string) bo
 }
 
 // Assignable tests if the types of expected and obtained are assignable.
-func (a *Asserts) Assignable(obtained, expected interface{}, msgs ...string) bool {
+func (a *Asserts) Assignable(obtained, expected any, msgs ...string) bool {
 	if !isAssignable(obtained, expected) {
 		return a.failer.Fail(Assignable, obtained, expected, msgs...)
 	}
@@ -324,7 +319,7 @@ func (a *Asserts) Assignable(obtained, expected interface{}, msgs ...string) boo
 
 // Unassignable tests if the types of expected and obtained are
 // not assignable.
-func (a *Asserts) Unassignable(obtained, expected interface{}, msgs ...string) bool {
+func (a *Asserts) Unassignable(obtained, expected any, msgs ...string) bool {
 	if isAssignable(obtained, expected) {
 		return a.failer.Fail(Unassignable, obtained, expected, msgs...)
 	}
@@ -333,7 +328,7 @@ func (a *Asserts) Unassignable(obtained, expected interface{}, msgs ...string) b
 
 // Empty tests if the len of the obtained string, array, slice
 // map, or channel is 0.
-func (a *Asserts) Empty(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) Empty(obtained any, msgs ...string) bool {
 	ok, l, err := hasLength(obtained, 0)
 	if err != nil {
 		return a.failer.Fail(Empty, ValueDescription(obtained), 0, err.Error())
@@ -347,7 +342,7 @@ func (a *Asserts) Empty(obtained interface{}, msgs ...string) bool {
 
 // NotEmpty tests if the len of the obtained string, array, slice
 // map, or channel is greater than 0.
-func (a *Asserts) NotEmpty(obtained interface{}, msgs ...string) bool {
+func (a *Asserts) NotEmpty(obtained any, msgs ...string) bool {
 	ok, l, err := hasLength(obtained, 0)
 	if err != nil {
 		return a.failer.Fail(NotEmpty, ValueDescription(obtained), 0, err.Error())
@@ -361,7 +356,7 @@ func (a *Asserts) NotEmpty(obtained interface{}, msgs ...string) bool {
 
 // Length tests if the len of the obtained string, array, slice
 // map, or channel is equal to the expected one.
-func (a *Asserts) Length(obtained interface{}, expected int, msgs ...string) bool {
+func (a *Asserts) Length(obtained any, expected int, msgs ...string) bool {
 	ok, l, err := hasLength(obtained, expected)
 	if err != nil {
 		return a.failer.Fail(Length, ValueDescription(obtained), expected, err.Error())
@@ -389,7 +384,7 @@ func (a *Asserts) NotPanics(pf func(), msgs ...string) bool {
 }
 
 // PanicsWith checks if the passed function panics with the passed reason.
-func (a *Asserts) PanicsWith(pf func(), reason interface{}, msgs ...string) bool {
+func (a *Asserts) PanicsWith(pf func(), reason any, msgs ...string) bool {
 	if !hasPanic(pf, reason) {
 		return a.failer.Fail(PanicsWith, ValueDescription(pf), reason, msgs...)
 	}
@@ -411,8 +406,8 @@ func (a *Asserts) PathExists(obtained string, msgs ...string) bool {
 // Wait receives a signal from a channel and compares it to the
 // expired value. Assert also fails on timeout.
 func (a *Asserts) Wait(
-	sigc <-chan interface{},
-	expected interface{},
+	sigc <-chan any,
+	expected any,
 	timeout time.Duration,
 	msgs ...string,
 ) bool {
@@ -429,7 +424,7 @@ func (a *Asserts) Wait(
 
 // WaitClosed waits until a channel closing, the assert fails on a timeout.
 func (a *Asserts) WaitClosed(
-	sigc <-chan interface{},
+	sigc <-chan any,
 	timeout time.Duration,
 	msgs ...string,
 ) bool {
@@ -475,8 +470,8 @@ func (a *Asserts) WaitGroup(
 // function on it. That has to return nil for a signal assert. In case of
 // a timeout the assert fails.
 func (a *Asserts) WaitTested(
-	sigc <-chan interface{},
-	test func(interface{}) error,
+	sigc <-chan any,
+	test func(any) error,
 	timeout time.Duration,
 	msgs ...string,
 ) bool {
@@ -504,24 +499,35 @@ func (a *Asserts) Retry(rf func() bool, retries int, pause time.Duration, msgs .
 	return a.failer.Fail(Retry, info, "successful call", msgs...)
 }
 
+// Logf can be used to display helpful information during testing.
+func (a *Asserts) Logf(format string, as ...any) {
+	a.failer.Logf(format, as...)
+}
+
 // Fail always fails.
 func (a *Asserts) Fail(msgs ...string) bool {
 	return a.failer.Fail(Fail, nil, nil, msgs...)
 }
 
+// Failf always fails with a formatted message.
+func (a *Asserts) Failf(format string, as ...any) bool {
+	msg := fmt.Sprintf(format, as...)
+	return a.failer.Fail(Fail, nil, nil, msg)
+}
+
 // MakeWaitChan is a simple one-liner to create the buffered signal channel
 // for the wait assertion.
-func MakeWaitChan() chan interface{} {
-	return make(chan interface{}, 1)
+func MakeWaitChan() chan any {
+	return make(chan any, 1)
 }
 
 // MakeMultiWaitChan is a simple one-liner to create a sized buffered signal
 // channel for the wait assertion.
-func MakeMultiWaitChan(size int) chan interface{} {
+func MakeMultiWaitChan(size int) chan any {
 	if size < 1 {
 		size = 1
 	}
-	return make(chan interface{}, size)
+	return make(chan any, size)
 }
 
 //--------------------
@@ -530,8 +536,8 @@ func MakeMultiWaitChan(size int) chan interface{} {
 
 // lowHigh transports the expected borders of a range test.
 type lowHigh struct {
-	low  interface{}
-	high interface{}
+	low  any
+	high any
 }
 
 // errable describes a type able to return an error state
@@ -541,7 +547,7 @@ type errable interface {
 }
 
 // ifaceToError converts an interface{} into an error.
-func ifaceToError(obtained interface{}) error {
+func ifaceToError(obtained any) error {
 	if obtained == nil {
 		return nil
 	}
@@ -568,7 +574,7 @@ type lenable interface {
 
 // obexString constructs a descriptive sting matching
 // to test, obtained, and expected value.
-func obexString(test Test, obtained, expected interface{}) string {
+func obexString(test Test, obtained, expected any) string {
 	switch test {
 	case True, False, Nil, NotNil, Empty, NotEmpty:
 		return fmt.Sprintf("'%v'", obtained)

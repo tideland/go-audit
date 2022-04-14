@@ -39,10 +39,10 @@ type Failer interface {
 	IncrCallstackOffset() func()
 
 	// Logf can be used to display useful information during testing.
-	Logf(format string, args ...interface{})
+	Logf(format string, args ...any)
 
 	// Fail will be called if an assert fails.
-	Fail(test Test, obtained, expected interface{}, msgs ...string) bool
+	Fail(test Test, obtained, expected any, msgs ...string) bool
 }
 
 // FailureDetail contains detailed information of a failure.
@@ -137,12 +137,12 @@ func (f *panicFailer) IncrCallstackOffset() func() {
 }
 
 // Logf implements Failer.
-func (f *panicFailer) Logf(format string, args ...interface{}) {
+func (f *panicFailer) Logf(format string, args ...any) {
 	f.printer.Logf(format+"\n", args...)
 }
 
 // Fail implements the Failer interface.
-func (f panicFailer) Fail(test Test, obtained, expected interface{}, msgs ...string) bool {
+func (f panicFailer) Fail(test Test, obtained, expected any, msgs ...string) bool {
 	obex := obexString(test, obtained, expected)
 	failStr := failString(test, obex, msgs...)
 	f.printer.Errorf(failStr)
@@ -225,7 +225,7 @@ func (f *validationFailer) IncrCallstackOffset() func() {
 }
 
 // Logf implements Failer.
-func (f *validationFailer) Logf(format string, args ...interface{}) {
+func (f *validationFailer) Logf(format string, args ...any) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	location, fun := here(f.offset)
@@ -234,7 +234,7 @@ func (f *validationFailer) Logf(format string, args ...interface{}) {
 }
 
 // Fail implements Failer.
-func (f *validationFailer) Fail(test Test, obtained, expected interface{}, msgs ...string) bool {
+func (f *validationFailer) Fail(test Test, obtained, expected any, msgs ...string) bool {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	location, fun := here(f.offset)
@@ -320,7 +320,7 @@ func (f *testingFailer) IncrCallstackOffset() func() {
 }
 
 // Logf implements Failer.
-func (f *testingFailer) Logf(format string, args ...interface{}) {
+func (f *testingFailer) Logf(format string, args ...any) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	location, fun := here(f.offset)
@@ -329,7 +329,7 @@ func (f *testingFailer) Logf(format string, args ...interface{}) {
 }
 
 // Fail implements Failer.
-func (f *testingFailer) Fail(test Test, obtained, expected interface{}, msgs ...string) bool {
+func (f *testingFailer) Fail(test Test, obtained, expected any, msgs ...string) bool {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	location, fun := here(f.offset)

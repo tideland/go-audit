@@ -117,10 +117,10 @@ func (t Test) String() string {
 // the tests.
 type Printer interface {
 	// Logf prints a formatted logging information.
-	Logf(format string, args ...interface{})
+	Logf(format string, args ...any)
 
 	// Errorf prints a formatted error.
-	Errorf(format string, args ...interface{})
+	Errorf(format string, args ...any)
 }
 
 // wrappedPrinter wraps a type implementing the Printer
@@ -137,12 +137,12 @@ func NewWrappedPrinter(p Printer) Printer {
 }
 
 // Logf implements Printer.
-func (p *wrappedPrinter) Logf(format string, args ...interface{}) {
+func (p *wrappedPrinter) Logf(format string, args ...any) {
 	p.printer.Logf(format, args...)
 }
 
 // Errorf implements Printer.
-func (p *wrappedPrinter) Errorf(format string, args ...interface{}) {
+func (p *wrappedPrinter) Errorf(format string, args ...any) {
 	p.printer.Errorf(format, args...)
 }
 
@@ -156,12 +156,12 @@ func NewStandardPrinter() Printer {
 }
 
 // Logf implements Printer.
-func (p *standardPrinter) Logf(format string, args ...interface{}) {
+func (p *standardPrinter) Logf(format string, args ...any) {
 	fmt.Fprintf(os.Stdout, format, args...)
 }
 
 // Errorf implements Printer.
-func (p *standardPrinter) Errorf(format string, args ...interface{}) {
+func (p *standardPrinter) Errorf(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, format, args...)
 }
 
@@ -185,13 +185,13 @@ func NewBufferedPrinter() BufferedPrinter {
 }
 
 // Logf implements Printer.
-func (p *bufferedPrinter) Logf(format string, args ...interface{}) {
+func (p *bufferedPrinter) Logf(format string, args ...any) {
 	s := fmt.Sprintf("[LOG] "+format, args...)
 	p.buffer = append(p.buffer, s)
 }
 
 // Errorf implements Printer.
-func (p *bufferedPrinter) Errorf(format string, args ...interface{}) {
+func (p *bufferedPrinter) Errorf(format string, args ...any) {
 	s := fmt.Sprintf("[ERR] "+format, args...)
 	p.buffer = append(p.buffer, s)
 }
@@ -208,7 +208,7 @@ func (p *bufferedPrinter) Flush() []string {
 //--------------------
 
 // ValueDescription returns a description of a value as string.
-func ValueDescription(value interface{}) string {
+func ValueDescription(value any) string {
 	rvalue := reflect.ValueOf(value)
 	kind := rvalue.Kind()
 	switch kind {
@@ -226,7 +226,7 @@ func ValueDescription(value interface{}) string {
 }
 
 // TypedValue returns a value including its type.
-func TypedValue(value interface{}) string {
+func TypedValue(value any) string {
 	kind := reflect.ValueOf(value).Kind()
 	switch kind {
 	case reflect.String:

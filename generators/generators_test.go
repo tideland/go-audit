@@ -141,7 +141,7 @@ func TestInts(t *testing.T) {
 func TestOneOf(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 	gen := generators.New(generators.FixedRand())
-	stuff := []interface{}{1, true, "three", 47.11, []byte{'A', 'B', 'C'}}
+	stuff := []any{1, true, "three", 47.11, []byte{'A', 'B', 'C'}}
 
 	for i := 0; i < 10000; i++ {
 		m := gen.OneOf(stuff...)
