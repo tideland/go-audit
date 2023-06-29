@@ -1,6 +1,6 @@
 // Tideland Go Audit - Asserts - Unit Tests
 //
-// Copyright (C) 2012-2021 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2023 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -123,6 +123,61 @@ func TestAssertNotNil(t *testing.T) {
 
 	successfulAssert.NotNil("not nil", "should not fail")
 	failingAssert.NotNil(nil, "should fail and be logged")
+}
+
+// TestAssertZero tests the Zero() assertion.
+func TestAssertZero(t *testing.T) {
+	successfulAssert := successfulAsserts(t)
+	failingAssert := failingAsserts(t)
+
+	var f func() error
+	var c chan int
+
+	successfulAssert.Zero(0, "should not fail")
+	successfulAssert.Zero(int8(0), "should not fail")
+	successfulAssert.Zero(int16(0), "should not fail")
+	successfulAssert.Zero(int32(0), "should not fail")
+	successfulAssert.Zero(int64(0), "should not fail")
+	successfulAssert.Zero(uint(0), "should not fail")
+	successfulAssert.Zero(uint8(0), "should not fail")
+	successfulAssert.Zero(uint16(0), "should not fail")
+	successfulAssert.Zero(uint32(0), "should not fail")
+	successfulAssert.Zero(uint64(0), "should not fail")
+	successfulAssert.Zero(float32(0), "should not fail")
+	successfulAssert.Zero(float64(0), "should not fail")
+	successfulAssert.Zero(complex64(0), "should not fail")
+	successfulAssert.Zero(complex128(0), "should not fail")
+	successfulAssert.Zero([0]int{}, "should not fail")
+	successfulAssert.Zero([]int{}, "should not fail")
+	successfulAssert.Zero(map[int]int{}, "should not fail")
+	successfulAssert.Zero(f, "should not fail")
+	successfulAssert.Zero(c, "should not fail")
+	successfulAssert.Zero("", "should not fail")
+
+	c = make(chan int, 1)
+	c <- 1
+	f = func() error { return errors.New("ouch") }
+
+	failingAssert.Zero(1, "should fail and be logged")
+	failingAssert.Zero(int8(1), "should fail and be logged")
+	failingAssert.Zero(int16(1), "should fail and be logged")
+	failingAssert.Zero(int32(1), "should fail and be logged")
+	failingAssert.Zero(int64(1), "should fail and be logged")
+	failingAssert.Zero(uint(1), "should fail and be logged")
+	failingAssert.Zero(uint8(1), "should fail and be logged")
+	failingAssert.Zero(uint16(1), "should fail and be logged")
+	failingAssert.Zero(uint32(1), "should fail and be logged")
+	failingAssert.Zero(uint64(1), "should fail and be logged")
+	failingAssert.Zero(float32(1), "should fail and be logged")
+	failingAssert.Zero(float64(1), "should fail and be logged")
+	failingAssert.Zero(complex64(1), "should fail and be logged")
+	failingAssert.Zero(complex128(1), "should fail and be logged")
+	failingAssert.Zero([1]int{}, "should fail and be logged")
+	failingAssert.Zero([]int{1}, "should fail and be logged")
+	failingAssert.Zero(map[int]int{1: 1}, "should fail and be logged")
+	failingAssert.Zero(f, "should fail and be logged")
+	failingAssert.Zero(c, "should fail and be logged")
+	failingAssert.Zero("1", "should fail and be logged")
 }
 
 // TestAssertNoError tests the NoError() assertion.
@@ -613,7 +668,7 @@ func TestValidationAssertion(t *testing.T) {
 	details := failures.Details()
 	location, fun := details[0].Location()
 	tt := details[0].Test()
-	if location != "asserts_test.go:600:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:655:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of first detail", location, fun)
 	}
 	if tt != asserts.True {
@@ -621,7 +676,7 @@ func TestValidationAssertion(t *testing.T) {
 	}
 	location, fun = details[1].Location()
 	tt = details[1].Test()
-	if location != "asserts_test.go:601:0:" || fun != "TestValidationAssertion" {
+	if location != "asserts_test.go:656:0:" || fun != "TestValidationAssertion" {
 		t.Errorf("wrong location %q or function %q of second detail", location, fun)
 	}
 	if tt != asserts.Equal {

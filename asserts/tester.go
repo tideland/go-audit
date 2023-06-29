@@ -1,6 +1,6 @@
 // Tideland Go Audit - Asserts
 //
-// Copyright (C) 2012-2021 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2023 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -44,6 +44,43 @@ func isNil(obtained any) bool {
 	switch kind {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
 		return value.IsNil()
+	}
+	return false
+}
+
+// isZero checks if obtained is the zero value of its type.
+func isZero(obtained any) bool {
+	if obtained == nil {
+		// Standard test.
+		return true
+	}
+	// Some types have to be tested via reflection.
+	value := reflect.ValueOf(obtained)
+	kind := value.Kind()
+	switch kind {
+	case reflect.Func, reflect.Interface, reflect.Ptr:
+		return value.IsNil()
+	case reflect.Chan, reflect.Map, reflect.Slice:
+		if value.IsNil() {
+			return true
+		}
+		l := value.Len()
+		return l == 0
+	case reflect.Array:
+		l := value.Len()
+		return l == 0
+	case reflect.Bool:
+		return !value.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return value.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return value.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return value.Float() == 0.0
+	case reflect.Complex64, reflect.Complex128:
+		return value.Complex() == 0.0
+	case reflect.String:
+		return value.String() == ""
 	}
 	return false
 }

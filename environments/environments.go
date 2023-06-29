@@ -1,6 +1,6 @@
 // Tideland Go Audit - Environments
 //
-// Copyright (C) 2012-2020 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2023 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -27,12 +27,12 @@ import (
 // TempDir represents a temporary directory and possible subdirectories
 // for testing purposes. It simply is created with
 //
-//     assert := asserts.NewTesting(t, asserts.FailContinue)
-//     td := environments.NewTempDir(assert)
-//     defer td.Restore()
+//	assert := asserts.NewTesting(t, asserts.FailContinue)
+//	td := environments.NewTempDir(assert)
+//	defer td.Restore()
 //
-//     tdName := td.String()
-//     subName:= td.Mkdir("my", "sub", "directory")
+//	tdName := td.String()
+//	subName:= td.Mkdir("my", "sub", "directory")
 //
 // The deferred Restore() removes the temporary directory with all
 // contents.
@@ -98,15 +98,15 @@ func (td *TempDir) String() string {
 // Variables allows to change and restore environment variables. The
 // same variable can be set multiple times. Simply do
 //
-//     assert := asserts.NewTesting(t, asserts.FailContinue)
-//     ev := environments.NewVariables(assert)
-//     defer ev.Restore()
+//	assert := asserts.NewTesting(t, asserts.FailContinue)
+//	ev := environments.NewVariables(assert)
+//	defer ev.Restore()
 //
-//     ev.Set("MY_VAR", myValue)
+//	ev.Set("MY_VAR", myValue)
 //
-//     ...
+//	...
 //
-//     ev.Set("MY_VAR", anotherValue)
+//	ev.Set("MY_VAR", anotherValue)
 //
 // The deferred Restore() resets to the original values.
 type Variables struct {
