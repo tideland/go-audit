@@ -1,6 +1,6 @@
 // Tideland Go Audit - Generators - Unit Tests
 //
-// Copyright (C) 2013-2021 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2013-2023 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the New BSD license.

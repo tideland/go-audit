@@ -1,6 +1,6 @@
 // Tideland Go Audit - Asserts
 //
-// Copyright (C) 2012-2021 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2023 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -31,6 +31,7 @@ const (
 	False
 	Nil
 	NotNil
+	Zero
 	NoError
 	AnyError
 	Equal
@@ -71,6 +72,7 @@ var testNames = []string{
 	False:        "false",
 	Nil:          "nil",
 	NotNil:       "not nil",
+	Zero:         "zero",
 	NoError:      "no error",
 	AnyError:     "any error",
 	Equal:        "equal",

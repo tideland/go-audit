@@ -1,6 +1,6 @@
 // Tideland Go Audit - Capture
 //
-// Copyright (C) 2017-2020 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2017-2023 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -9,14 +9,14 @@
 // Those will be temporarily exchanged so that the written output will be
 // caught and can be retrieved.
 //
-//     cout := capture.Stdout(func() {
-//         fmt.Printf("Hello, World!")
-//     })
-//     cerr := capture.Stderr(func() { ... })
+//	cout := capture.Stdout(func() {
+//	    fmt.Printf("Hello, World!")
+//	})
+//	cerr := capture.Stderr(func() { ... })
 //
-//     assert.Equal(cout.String(), "Hello, World!")
+//	assert.Equal(cout.String(), "Hello, World!")
 //
-//     cout, cerr = capture.Both(func() { ... })
+//	cout, cerr = capture.Both(func() { ... })
 //
 // The captured content data also can be retrieved as bytes.
 package capture // import "tideland.dev/go/audit/capture"

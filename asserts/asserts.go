@@ -1,6 +1,6 @@
 // Tideland Go Audit - Asserts
 //
-// Copyright (C) 2012-2021 Frank Mueller / Tideland / Oldenburg / Germany
+// Copyright (C) 2012-2023 Frank Mueller / Tideland / Oldenburg / Germany
 //
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
@@ -45,10 +45,10 @@ func (a *Asserts) SetPrinter(printer Printer) Printer {
 // a failer. This way a testing.T of a sub-test can be injected. A
 // restore function is returned.
 //
-//     t.Run(name, func(t *testing.T)) {
-//         defer assert.SetFailable(t)()
-//         ...
-//     })
+//	t.Run(name, func(t *testing.T)) {
+//	    defer assert.SetFailable(t)()
+//	    ...
+//	})
 //
 // So the returned restorer function will be called when
 // leaving the sub-test.
@@ -150,6 +150,14 @@ func (a *Asserts) NotNil(obtained any, msgs ...string) bool {
 	return true
 }
 
+// Zero tests if obtained is the zero value of its type or if it is empty.
+func (a *Asserts) Zero(obtained any, msgs ...string) bool {
+	if !isZero(obtained) {
+		return a.failer.Fail(Zero, obtained, nil, msgs...)
+	}
+	return true
+}
+
 // Equal tests if obtained and expected are equal.
 func (a *Asserts) Equal(obtained, expected any, msgs ...string) bool {
 	if !isEqual(obtained, expected) {
@@ -168,7 +176,7 @@ func (a *Asserts) Different(obtained, expected any, msgs ...string) bool {
 
 // NoError tests if the obtained error or ErrorProne.Err() is nil.
 func (a *Asserts) NoError(obtained any, msgs ...string) bool {
-	err := ifaceToError(obtained)
+	err := anyToError(obtained)
 	if !isNil(err) {
 		return a.failer.Fail(NoError, err, nil, msgs...)
 	}
@@ -177,7 +185,7 @@ func (a *Asserts) NoError(obtained any, msgs ...string) bool {
 
 // AnyError tests if the obtained error or ErrorProne.Err() is not nil.
 func (a *Asserts) AnyError(obtained any, msgs ...string) bool {
-	err := ifaceToError(obtained)
+	err := anyToError(obtained)
 	if isNil(err) {
 		return a.failer.Fail(AnyError, err, nil, msgs...)
 	}
@@ -190,7 +198,7 @@ func (a *Asserts) ErrorMatch(obtained any, regex string, msgs ...string) bool {
 	if obtained == nil {
 		return a.failer.Fail(ErrorMatch, nil, regex, "error is nil")
 	}
-	err := ifaceToError(obtained)
+	err := anyToError(obtained)
 	matches, err := isMatching(err.Error(), regex)
 	if err != nil {
 		return a.failer.Fail(ErrorMatch, err, regex, "can't compile regex: "+err.Error())
@@ -206,7 +214,7 @@ func (a *Asserts) ErrorContains(obtained any, part string, msgs ...string) bool 
 	if obtained == nil {
 		return a.failer.Fail(ErrorContains, nil, part, "error is nil")
 	}
-	err := ifaceToError(obtained)
+	err := anyToError(obtained)
 	if !isSubstring(part, err.Error()) {
 		return a.failer.Fail(ErrorContains, obtained, part, msgs...)
 	}
@@ -546,8 +554,8 @@ type errable interface {
 	Err() error
 }
 
-// ifaceToError converts an interface{} into an error.
-func ifaceToError(obtained any) error {
+// anyToError converts an any variable into an error.
+func anyToError(obtained any) error {
 	if obtained == nil {
 		return nil
 	}
